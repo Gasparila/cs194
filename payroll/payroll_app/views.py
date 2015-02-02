@@ -28,3 +28,48 @@ def index(request):
 	# bp1.save()
 	# bp2.save()
 	return render(request, 'index.html', {})
+
+def addCompany(request):
+    employer_id = request.POST['employer_id']
+    employer_name = request.POST['employer_name']
+    employer_address = request.POST['employer_address']
+    employer_key = request.POST['employer_key']
+    employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key)
+    employer.save()
+    return HttpResponse("Successfully created entry for %s." % employer_name) 
+}
+
+def addEmployee(request):
+    employee_id = request.POST['employee_id']
+    employer_id = request.POST['employer_id']
+    employee_name = request.POST['employee_name']
+    employee_address = request.POST['employee_address']
+    try:
+        vacation_hours = request.POST['vacation_hours']
+    except (KeyError, Choice.DoesNotExist):
+    try:
+        sick_hours = request.POST['sick_hours']
+    except (KeyError, Choice.DoesNotExist):
+    try:
+        vacation_pay_rate = request.POST['vacation_pay_rate']
+    except (KeyError, Choice.DoesNotExist):
+    try:
+        sick_pay_rate = request.POST['sick_pay_rate']
+    except (KeyError, Choice.DoesNotExist):
+    try:
+        vacation_accrual_rate = request.POST['vacation_accrual_rate']
+    except (KeyError, Choice.DoesNotExist):
+    employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
+    employee.save()
+    return HttpResponse("Successfully created entry for %s." % employee_name) 
+}
+
+def addJob(request):
+    job_id = request.POST['job_id']
+    employee_id = request.POST['employee_id']
+    base_rate = request.POST['base_rate']
+    incremental_rate_1 = request.POST['incremental_rate_1']
+    incremental_rate_2 = request.POST['incremental_rate_2']
+    job_title = request.POST['job_title']
+	job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
+    job.save()
