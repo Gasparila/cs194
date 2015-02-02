@@ -44,21 +44,31 @@ def addEmployee(request):
     employer_id = request.POST['employer_id']
     employee_name = request.POST['employee_name']
     employee_address = request.POST['employee_address']
+    vacation_hours 
     try:
         vacation_hours = request.POST['vacation_hours']
     except (KeyError, Choice.DoesNotExist):
+        vacation_hours = 0 
+    sick_hours
     try:
         sick_hours = request.POST['sick_hours']
     except (KeyError, Choice.DoesNotExist):
+        sick_hours = 0
+    vacation_pay_rate
     try:
         vacation_pay_rate = request.POST['vacation_pay_rate']
     except (KeyError, Choice.DoesNotExist):
+        vacation_pay_rate = 0  
+    sick_pay_rate
     try:
         sick_pay_rate = request.POST['sick_pay_rate']
     except (KeyError, Choice.DoesNotExist):
+        sick_pay_rate = 0
+    vacation_accrual_rate
     try:
         vacation_accrual_rate = request.POST['vacation_accrual_rate']
     except (KeyError, Choice.DoesNotExist):
+        vacation_accrual_rate = 0    
     employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
     employee.save()
     return HttpResponse("Successfully created entry for %s." % employee_name) 
@@ -68,8 +78,23 @@ def addJob(request):
     job_id = request.POST['job_id']
     employee_id = request.POST['employee_id']
     base_rate = request.POST['base_rate']
-    incremental_rate_1 = request.POST['incremental_rate_1']
-    incremental_rate_2 = request.POST['incremental_rate_2']
+    incremental_rate_1
+    try:
+        incremental_rate_1 = request.POST['incremental_rate_1']
+    except (KeyError, Choice.DoesNotExist):
+        incremental_rate_1 = 0
+    incremental_rate_2
+    try:
+        incremental_rate_2 = request.POST['incremental_rate_2']
+    except (KeyError, Choice.DoesNotExist):
+        incremental_rate_2 = 0
     job_title = request.POST['job_title']
 	job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
     job.save()
+
+def parseTimecardData:
+    #TODO: Implement using yield
+    
+def addTimecardData(request):
+    for entry in parseTimecardData(request):
+        entry.save();
