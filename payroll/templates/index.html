@@ -1,10 +1,106 @@
+{% load mathfilters %}
+{% load render_table from django_tables2 %}
 <!DOCTYPE html>
 <html>
 <body>
+	{% if employer %}
+	<p> From: {{ employer.employer_name }}<br>
+		{{ employer.address }}</p>
+		{% endif %}
 
-<h1>Hello</h1>
+		{% if employee %}
+		<p> To: {{ employee.employee_name }}<br>
+			{{ employee.address }}</p>
+			{% endif %}
 
-<p>Success!</p>
+			{% if payperiods %}
+			{% if jobs %}
+			{% for payperiod in payperiods %}
+			{% for job in jobs %}
+			{% ifequal job.job_id payperiod.job_id%}
+			<p> Pay Period: {{payperiod.pay_start}} to {{payperiod.pay_end}} <br> Job: {{ job.job_title}}</p>
+			<table style="width:50%" border = 1>
+				<tr>
+					<th> Type </th>
+					<th> Hours </th>
+					<th> Rate </th>
+					<th> Payment</th>
+				</tr>
+				<tr>
+					<td> Base </td>
+					<td> {{payperiod.hours}} </td>
+					<td> {{job.base_rate}} </td>
+					{% with base=job.base_rate|mul:payperiod.hours %}
+					<td> ${{base}}</td>
+				</tr>
+				<tr>
+					<td> Overtime Hours </td>
+					<td> {{payperiod.overtime_hours}} </td>
+					<td> {{job.base_rate|mul:1.5}} </td>
+					{% with over=job.base_rate|mul:1.5|mul:payperiod.overtime_hours %}
+					<td> ${{over}}</td>
+				</tr>
+				<tr>
+					<td> Vacation Hours Spent </td>
+					<td> {{payperiod.vacation_hours_spent}} </td>
+					<td> {{employee.vacation_pay_rate}} </td>
+					{% with vac=payperiod.vacation_hours_spent|mul:employee.vacation_pay_rate %}
+					<td> ${{vac}}</td>
+				</tr>
+				<tr>
+					<td> Holiday Hours Spent </td>
+					<td> {{payperiod.holiday_hours_spent}} </td>
+					<td> {{employee.vacation_pay_rate}} </td>
+					{% with hol=payperiod.holiday_hours_spent|mul:employee.vacation_pay_rate %}
+					<td> ${{hol}}</td>
+				</tr>
+				<tr>
+					<td> Sick Hours Spent </td>
+					<td> {{payperiod.sick_hours_spent}} </td>
+					<td> {{employee.sick_pay_rate}} </td>
+					{% with sick=payperiod.sick_hours_spent|mul:employee.sick_pay_rate %}					
+					<td> ${{sick}}</td>
+				</tr>
+				<tr>
+					<td> Total </td>
+					<td>  </td>
+					<td> </td>
+					<td> ${{base|add:over|add:vac|add:hol|add:sick}}</td>
+				</tr>
+				{% endwith %}
+				{% endwith %}
+				{% endwith %}
+				{% endwith %}
+				{% endwith %}
+			</table>
+			<table style="width:50%" border = 1>
+				<tr>
+					<th> Type </th>
+					<th> Hours Earned </th>
+					<th> Total </th>
+				</tr>
+				<!-- <tr>
+					<td> Holiday Hours </td>
+					<td> {{payperiod.holiday_hours}} </td>
+					<td> {{employee.holiday_hours}}</td>
+				</tr> -->
+				<tr>
+					<td> Vacation Hours </td>
+					<td> {{payperiod.vacation_hours}} </td>
+					<td> {{employee.vacation_hours}}</td>
+				</tr>
+				<tr>
+					<td> Sick Hours </td>
+					<td> {{payperiod.sick_hours}} </td>
+					<td> {{employee.sick_hours}}</td>
+				</tr>
+			</table>
 
-</body>
-</html>
+			{% endifequal %}
+			{% endfor%}
+			{% endfor %}	
+			{% endif %}
+			{% endif %}
+
+		</body>
+		</html>

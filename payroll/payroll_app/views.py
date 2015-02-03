@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import datetime
-from payroll_app.models import Employer, Employee, Job, BonusPay
+from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
 
 
 # Create your views here.
@@ -27,4 +27,18 @@ def index(request):
 	# job4.save()
 	# bp1.save()
 	# bp2.save()
+	#PayPeriod.objects.all().delete()
+	#payPeriod1 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 0, incremental_hours_2 = 0, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 0, sick_hours_spent = 2, vacation_hours_spent = 0)
+	#payPeriod1.save()
+	employer_id = "13492"
+	employee_id = "78777"
+	employer = Employer.objects.get(employer_id = employer_id)
+	if employer_id ==  employer.employer_id: 
+		payPeriod1 = PayPeriod.objects.all().filter(employee_id=employee_id)
+		employee = Employee.objects.all().get(employee_id = employee_id)
+		jobs = Job.objects.all().filter(employee_id = employee_id)
+		print payPeriod1
+		return render(request, 'index.html', {'payperiods' : payPeriod1, 'employer' : employer, 'employee' : employee, 'jobs' : jobs })
+	
+
 	return render(request, 'index.html', {})
