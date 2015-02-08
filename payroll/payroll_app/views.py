@@ -44,6 +44,11 @@ def index(request):
 
 	return render(request, 'index.html', {})
 
+def checkEmployer(employer_id, employer_password):
+    #TODO: Implement this
+    return true
+
+#TODO: Probably remove this since we should manually add companies
 def addCompany(request):
     if request.method == 'POST':
         json_data = simplejson.loads(request.body)
@@ -61,32 +66,30 @@ def addEmployee(request):
         json_data = simplejson.loads(request.body)
         employee_id = json_data['employee_id']
         employer_id = json_data['employer_id']
+        employer_password = json_data['employer_key']
+        if (!checkEmployer(employer_id, employer_password)):
+            HttpResponseServerError("Invalid Employer ID/Key")
         employee_name = json_data['employee_name']
         employee_address = json_data['employee_address']
-        vacation_hours 
         try:
             vacation_hours = json_data['vacation_hours']
-        except KeyError
+        except KeyError:
             vacation_hours = 0 
-        sick_hours
         try:
             sick_hours = json_data['sick_hours']
-        except KeyError
+        except KeyError:
             sick_hours = 0
-        vacation_pay_rate
         try:
             vacation_pay_rate = json_data['vacation_pay_rate']
-        except KeyError
+        except KeyError:
             vacation_pay_rate = 0  
-        sick_pay_rate
         try:
             sick_pay_rate = json_data['sick_pay_rate']
-        except KeyError
+        except KeyError:
             sick_pay_rate = 0
-        vacation_accrual_rate
         try:
             vacation_accrual_rate = json_data['vacation_accrual_rate']
-        except KeyError
+        except KeyError:
             vacation_accrual_rate = 0    
         employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
         employee.save()
@@ -98,16 +101,18 @@ def addJob(request):
         json_data = simplejson.loads(request.body)
         job_id = json_data['job_id']
         employee_id = json_data['employee_id']
+        employer_id = json_data['employer_id']
+        employer_password = json_data['employer_key']
+        if !checkEmployer(employer_id, employer_password) :
+            HttpResponseServerError("Invalid Employer ID/Key")
         base_rate = json_data['base_rate']
-        incremental_rate_1
         try:
             incremental_rate_1 = json_data['incremental_rate_1']
         except KeyError:
             incremental_rate_1 = 0
-        incremental_rate_2
         try:
             incremental_rate_2 = json_data['incremental_rate_2']
-        except KeyError
+        except KeyError:
             incremental_rate_2 = 0
         job_title = json_data['job_title']
         job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
@@ -116,13 +121,63 @@ def addJob(request):
     HttpResponseServerError("Error, request wasn't POST")
 
 def parseTimecardData(json_entry):
-    #TODO: Implement using yield
-    
+    job_id = json_entry['job_id']
+    employee_id = json_entry['employee_id']
+    hours = json_entry['hours']
+    try:
+        overtime_hours = json_entry['overtime_hours']
+    except KeyError:
+        overtime_hours = 0
+    try:
+        incremental_hours_1 = json_entry['incremental_hours_1']
+    except KeyError:
+        incremental_hours_1 = 0
+    try:
+        incremental_hours_2 = json_entry['incremental_hours_2']
+    except KeyError:
+        incremental_hours_2 = 0
+    try:
+        incremental_hours_1_and_2 = json_entry['incremental_hours_1_and_2']
+    except KeyError:
+        incremental_hours_1_and_2 = 0
+    try:
+        holiday_hours = json_entry['holiday_hours']
+    except KeyError:
+        holiday_hours = 0
+    try:
+        sick_hours = json_entry['sick_hours']
+    except KeyError:
+        sick_hours = 0
+    try:
+        vacation_hours = json_entry['vacation_hours']
+    except KeyError:
+        vacation_hours = 0
+    try:
+        holiday_hours_spent = json_entry['holiday_hours_spend']
+    except KeyError:
+        holiday_hours_spent = 0
+    try:
+        sick_hours_spent = json_entry['sick_hours_spent']
+    except KeyError:
+        sick_hours_spent = 0
+    try:
+        vacation_hours_spent = json_entry['vacation_hours_spent']
+    except KeyError:
+        vacation_hours_spent = 0
+    return PayPeriod(employee_id=employee, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
+
 def addTimecardData(request):
     if request.method == 'POST':
         json_data = simplejson.loads(request.body)
-        for json_entry in json_data:
+        pay_period = json_data['pay_period']
+        employer_id = json_data['employer_id']
+        employer_password = json_data['employer_key']
+        if !checkEmployer(employer_id, employer_password) :
+            HttpResponseServerError("Invalid Employer ID/Key")
+        for json_entry in json_data['timecard_data']:
             entry = parseTimecardData(json_entry):
+            entry.pay_start = entry.pay_period.start
+            entry.pay_end = entry.pay_period.end
             entry.save();
         return HttpResponse("Successfully added %d timecards." % len(json_data)) 
     HttpResponseServerError("Error, request wasn't POST")
