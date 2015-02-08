@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.utils import simplejson
 import datetime
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
 
@@ -44,71 +45,84 @@ def index(request):
 	return render(request, 'index.html', {})
 
 def addCompany(request):
-    employer_id = request.POST['employer_id']
-    employer_name = request.POST['employer_name']
-    employer_address = request.POST['employer_address']
-    employer_key = request.POST['employer_key']
-    employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key)
-    employer.save()
-    return HttpResponse("Successfully created entry for %s." % employer_name) 
-}
+    if request.method == 'POST':
+        json_data = simplejson.loads(request.body)
+        employer_id = json_data['employer_id']
+        employer_name = json_data['employer_name']
+        employer_address = json_data['employer_address']
+        employer_key = json_data['employer_key']
+        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key)
+        employer.save()
+        return HttpResponse("Successfully created entry for %s." % employer_name) 
+    HttpResponseServerError("Error, request wasn't POST")
 
 def addEmployee(request):
-    employee_id = request.POST['employee_id']
-    employer_id = request.POST['employer_id']
-    employee_name = request.POST['employee_name']
-    employee_address = request.POST['employee_address']
-    vacation_hours 
-    try:
-        vacation_hours = request.POST['vacation_hours']
-    except (KeyError, Choice.DoesNotExist):
-        vacation_hours = 0 
-    sick_hours
-    try:
-        sick_hours = request.POST['sick_hours']
-    except (KeyError, Choice.DoesNotExist):
-        sick_hours = 0
-    vacation_pay_rate
-    try:
-        vacation_pay_rate = request.POST['vacation_pay_rate']
-    except (KeyError, Choice.DoesNotExist):
-        vacation_pay_rate = 0  
-    sick_pay_rate
-    try:
-        sick_pay_rate = request.POST['sick_pay_rate']
-    except (KeyError, Choice.DoesNotExist):
-        sick_pay_rate = 0
-    vacation_accrual_rate
-    try:
-        vacation_accrual_rate = request.POST['vacation_accrual_rate']
-    except (KeyError, Choice.DoesNotExist):
-        vacation_accrual_rate = 0    
-    employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
-    employee.save()
-    return HttpResponse("Successfully created entry for %s." % employee_name) 
-}
+    if request.method == 'POST':
+        json_data = simplejson.loads(request.body)
+        employee_id = json_data['employee_id']
+        employer_id = json_data['employer_id']
+        employee_name = json_data['employee_name']
+        employee_address = json_data['employee_address']
+        vacation_hours 
+        try:
+            vacation_hours = json_data['vacation_hours']
+        except KeyError
+            vacation_hours = 0 
+        sick_hours
+        try:
+            sick_hours = json_data['sick_hours']
+        except KeyError
+            sick_hours = 0
+        vacation_pay_rate
+        try:
+            vacation_pay_rate = json_data['vacation_pay_rate']
+        except KeyError
+            vacation_pay_rate = 0  
+        sick_pay_rate
+        try:
+            sick_pay_rate = json_data['sick_pay_rate']
+        except KeyError
+            sick_pay_rate = 0
+        vacation_accrual_rate
+        try:
+            vacation_accrual_rate = json_data['vacation_accrual_rate']
+        except KeyError
+            vacation_accrual_rate = 0    
+        employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
+        employee.save()
+        return HttpResponse("Successfully created entry for %s." % employee_name) 
+    HttpResponseServerError("Error, request wasn't POST")
 
 def addJob(request):
-    job_id = request.POST['job_id']
-    employee_id = request.POST['employee_id']
-    base_rate = request.POST['base_rate']
-    incremental_rate_1
-    try:
-        incremental_rate_1 = request.POST['incremental_rate_1']
-    except (KeyError, Choice.DoesNotExist):
-        incremental_rate_1 = 0
-    incremental_rate_2
-    try:
-        incremental_rate_2 = request.POST['incremental_rate_2']
-    except (KeyError, Choice.DoesNotExist):
-        incremental_rate_2 = 0
-    job_title = request.POST['job_title']
-	job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
-    job.save()
+    if request.method == 'POST':
+        json_data = simplejson.loads(request.body)
+        job_id = json_data['job_id']
+        employee_id = json_data['employee_id']
+        base_rate = json_data['base_rate']
+        incremental_rate_1
+        try:
+            incremental_rate_1 = json_data['incremental_rate_1']
+        except KeyError:
+            incremental_rate_1 = 0
+        incremental_rate_2
+        try:
+            incremental_rate_2 = json_data['incremental_rate_2']
+        except KeyError
+            incremental_rate_2 = 0
+        job_title = json_data['job_title']
+        job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
+        job.save()
+        return HttpResponse("Successfully created entry for %s." % employee_id) 
+    HttpResponseServerError("Error, request wasn't POST")
 
-def parseTimecardData:
+def parseTimecardData(json_entry):
     #TODO: Implement using yield
     
 def addTimecardData(request):
-    for entry in parseTimecardData(request):
-        entry.save();
+    if request.method == 'POST':
+        json_data = simplejson.loads(request.body)
+        for json_entry in json_data:
+            entry = parseTimecardData(json_entry):
+            entry.save();
+        return HttpResponse("Successfully added %d timecards." % len(json_data)) 
+    HttpResponseServerError("Error, request wasn't POST")
