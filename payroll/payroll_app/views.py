@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import Http404
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 import json
@@ -54,16 +55,16 @@ def checkEmployer(employer_id, employer_password):
 @csrf_exempt
 def addCompany(request):
     if request.method == 'POST':
-        print request.body
         json_data = json.loads(request.body)
         try:
             employer_id = json_data['employer_id']
             employer_name = json_data['employer_name']
-            employer_address = json_data['employer_address']
-            employer_key = json_data['employer_key']
+            employer_address = json_data['address']
+            employer_key = json_data['key']
         except KeyError:
             raise Http404("Employer info not found")
-        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key)
+        curDate = datetime.datetime.now()
+        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key, pay_start=curDate, pay_end=curDate)
         employer.save()
         return HttpResponse("Successfully created entry for %s." % employer_name) 
     raise Http404("Error, request wasn't POST")
