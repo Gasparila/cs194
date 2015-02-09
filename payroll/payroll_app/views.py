@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.utils import simplejson
 import datetime
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
 
@@ -51,7 +50,7 @@ def checkEmployer(employer_id, employer_password):
 #TODO: Probably remove this since we should manually add companies
 def addCompany(request):
     if request.method == 'POST':
-        json_data = simplejson.loads(request.body)
+        json_data = json.load(request.body)
         employer_id = json_data['employer_id']
         employer_name = json_data['employer_name']
         employer_address = json_data['employer_address']
@@ -63,11 +62,11 @@ def addCompany(request):
 
 def addEmployee(request):
     if request.method == 'POST':
-        json_data = simplejson.loads(request.body)
+        json_data = json.load(request.body)
         employee_id = json_data['employee_id']
         employer_id = json_data['employer_id']
         employer_password = json_data['employer_key']
-        if (!checkEmployer(employer_id, employer_password)):
+        if not checkEmployer(employer_id, employer_password):
             HttpResponseServerError("Invalid Employer ID/Key")
         employee_name = json_data['employee_name']
         employee_address = json_data['employee_address']
@@ -98,12 +97,12 @@ def addEmployee(request):
 
 def addJob(request):
     if request.method == 'POST':
-        json_data = simplejson.loads(request.body)
+        json_data = json.load(request.body)
         job_id = json_data['job_id']
         employee_id = json_data['employee_id']
         employer_id = json_data['employer_id']
         employer_password = json_data['employer_key']
-        if !checkEmployer(employer_id, employer_password) :
+        if not checkEmployer(employer_id, employer_password) :
             HttpResponseServerError("Invalid Employer ID/Key")
         base_rate = json_data['base_rate']
         try:
@@ -168,14 +167,14 @@ def parseTimecardData(json_entry):
 
 def addTimecardData(request):
     if request.method == 'POST':
-        json_data = simplejson.loads(request.body)
+        json_data = json.load(request.body)
         pay_period = json_data['pay_period']
         employer_id = json_data['employer_id']
         employer_password = json_data['employer_key']
-        if !checkEmployer(employer_id, employer_password) :
+        if not checkEmployer(employer_id, employer_password) :
             HttpResponseServerError("Invalid Employer ID/Key")
         for json_entry in json_data['timecard_data']:
-            entry = parseTimecardData(json_entry):
+            entry = parseTimecardData(json_entry)
             entry.pay_start = entry.pay_period.start
             entry.pay_end = entry.pay_period.end
             entry.save();
