@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 import datetime
 import json
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
@@ -47,9 +49,9 @@ def index(request):
 
 	return render(request, 'index.html', {})
 
-def checkEmployer(employer_id, employer_password):
-    #TODO: Implement this
-    return true
+def checkEmployer(employer_id, employer_key):
+    employer = Employer.objects.get(employer_id = employer_id)
+    return check_password(employer_key, employer.hash_key)
 
 #TODO: remove this since we should manually add companies
 @csrf_exempt
@@ -61,6 +63,7 @@ def addCompany(request):
             employer_name = json_data['employer_name']
             employer_address = json_data['address']
             employer_key = json_data['key']
+            employer_key = make_password(employer_key)
         except KeyError:
             raise Http404("Employer info not found")
         curDate = datetime.datetime.now()
@@ -76,10 +79,10 @@ def addEmployee(request):
         try:
             employee_id = json_data['employee_id']
             employer_id = json_data['employer_id']
-            employer_password = json_data['employer_key']
+            employer_key = json_data['employer_key']
         except KeyError:
             raise Http404("EmployeeID, or employer info not found")
-        if not checkEmployer(employer_id, employer_password):
+        if not checkEmployer(employer_id, employer_key):
             raise Http404("Invalid Employer ID/Key")
         try:
             employee_name = json_data['employee_name']
@@ -120,10 +123,10 @@ def addJob(request):
             job_title = json_data['job_title']
             employee_id = json_data['employee_id']
             employer_id = json_data['employer_id']
-            employer_password = json_data['employer_key']
+            employer_key = json_data['employer_key']
         except KeyError:
             raise Http404("JobID, EmployeeID, or employer info not found")
-        if not checkEmployer(employer_id, employer_password) :
+        if not checkEmployer(employer_id, employer_key) :
             raise Http404("Invalid Employer ID/Key")
         try:
             base_rate = json_data['base_rate']
@@ -198,10 +201,10 @@ def addTimecardData(request):
         try:
             pay_period = json_data['pay_period']
             employer_id = json_data['employer_id']
-            employer_password = json_data['employer_key']
+            employer_key = json_data['employer_key']
         except KeyError:
             raise Http404("Pay period or employer info not found")
-        if not checkEmployer(employer_id, employer_password) :
+        if not checkEmployer(employer_id, employer_key) :
             raise Http404("Invalid Employer ID/Key")
         for json_entry in json_data['timecard_data']:
             entry = parseTimecardData(json_entry)
