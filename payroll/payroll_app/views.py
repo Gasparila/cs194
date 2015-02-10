@@ -108,19 +108,28 @@ def index(request):
                         total = total + incremental_pay12
                         tex.write(incremental_row12);
                     if payperiod.vacation_hours_spent > 0:
-                        vacation_pay =  payperiod.vacation_hours_spent * (employee.vacation_pay_rate);
+                        vacation_rate = employee.vacation_pay_rate
+                        if vacation_rate == 0: 
+                            vacation_rate = job.base_rate
+                        vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                         total = total + vacation_pay
-                        vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((employee.vacation_pay_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
+                        vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
                         tex.write(vacation_row); 
                     if payperiod.sick_hours_spent > 0:
-                        sick_pay =  payperiod.sick_hours_spent * (employee.sick_pay_rate);
+                        sick_rate = employee.sick_pay_rate;
+                        if sick_rate == 0: 
+                            sick_rate = job.base_rate
+                        sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                         total = total + sick_pay
-                        sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((employee.vacation_pay_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
+                        sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
                         tex.write(sick_row);
-                    if payperiod.vacation_hours_spent > 0:
-                        holiday_pay =  payperiod.holiday_hours_spent * (employee.vacation_pay_rate);
+                    if payperiod.holiday_hours_spent > 0:
+                        holiday_pay_rate = employee.vacation_pay_rate;
+                        if holiday_pay_rate  == 0: 
+                            holiday_pay_rate  = job.base_rate
+                        holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                         total = total + holiday_pay                        
-                        holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((employee.vacation_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
+                        holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
                         tex.write(holiday_row);
                     total_row = "\\textbf{Total} & & & \\textbf{" + str(total) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
                     tex.write(total_row);
