@@ -38,8 +38,19 @@ def index(request):
     #payPeriod1 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
   
     #payPeriod1.save()
-    employer_id = "13492"
-    employee_id = "78777"
+
+    json_data = json.loads(request.body)
+    try:
+        employer_id = json_data['employer_id']
+        employer_key = json_data['key']
+    except KeyError:
+        raise Http404("EmployeeID, or employer info not found")
+    if not checkEmployer(employer_id, employer_key):
+        raise Http404("Invalid Employer ID/Key")
+    try:
+        employee_id = json_data['employee_id']
+    except KeyError:
+        raise Http404("Employee info not found")
     tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
     tex = open( tex_name,'w')
     tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
