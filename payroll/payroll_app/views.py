@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import check_password
 from tempfile import *
 from subprocess import Popen, PIPE
 from subprocess import call
+from decimal import *
 import datetime
 import json
 import reportlab
@@ -86,6 +87,11 @@ def index(request):
                     base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(base_pay) + " \\\\\n\\hline\n"   
                     tex.write(base_row); 
                     total = base_pay;
+                    if payperiod.overtime_hours > 0: 
+                        overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
+                        total = total + overtime_pay
+                        overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(overtime_pay) + " \\\\\n\\hline\n"   
+                        tex.write(overtime_row); 
                     if payperiod.incremental_hours_1 > 0:
                         incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
                         total = total + incremental_pay1
