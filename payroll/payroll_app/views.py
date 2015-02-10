@@ -276,32 +276,32 @@ def parseTimecardData(json_entry):
         incremental_hours_1_and_2 = 0
     try:
         holiday_hours = json_entry['holiday_hours']
-        employee.holiday_hours += holiday_hours
+        employee.holiday_hours += int(holiday_hours)
     except KeyError:
         holiday_hours = 0
     try:
         sick_hours = json_entry['sick_hours']
-        employee.sick_hours += sick_hours
+        employee.sick_hours += int(sick_hours)
     except KeyError:
         sick_hours = 0
     try:
         vacation_hours = json_entry['vacation_hours']
-        employee.vacation_hours += vacation_hours
+        employee.vacation_hours += int(vacation_hours)
     except KeyError:
         vacation_hours = 0
     try:
         holiday_hours_spent = json_entry['holiday_hours_spent']
-        employee.holiday_hours -= holiday_hours
+        employee.holiday_hours -= int(holiday_hours_spent)
     except KeyError:
         holiday_hours_spent = 0
     try:
         sick_hours_spent = json_entry['sick_hours_spent']
-        employee.sick_hours -= sick_hours
+        employee.sick_hours -= int(sick_hours_spent)
     except KeyError:
         sick_hours_spent = 0
     try:
         vacation_hours_spent = json_entry['vacation_hours_spent']
-        employee.vacation_hours -= vacation_hours
+        employee.vacation_hours -= int(vacation_hours_spent)
     except KeyError:
         vacation_hours_spent = 0
     employee.save()
