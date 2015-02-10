@@ -246,6 +246,7 @@ def parseTimecardData(json_entry):
         job_id = json_entry['job_id']
         employee_id = json_entry['employee_id']
         hours = json_entry['hours']
+        employee = Employee.objects.get(employee_id = employee_id)
     except KeyError:
         raise Http404("Invalid time card entry")
     try:
@@ -266,28 +267,35 @@ def parseTimecardData(json_entry):
         incremental_hours_1_and_2 = 0
     try:
         holiday_hours = json_entry['holiday_hours']
+        employee.holiday_hours += holiday_hours
     except KeyError:
         holiday_hours = 0
     try:
         sick_hours = json_entry['sick_hours']
+        employee.sick_hours += sick_hours
     except KeyError:
         sick_hours = 0
     try:
         vacation_hours = json_entry['vacation_hours']
+        employee.vacation_hours += vacation_hours
     except KeyError:
         vacation_hours = 0
     try:
-        holiday_hours_spent = json_entry['holiday_hours_spend']
+        holiday_hours_spent = json_entry['holiday_hours_spent']
+        employee.holiday_hours -= holiday_hours
     except KeyError:
         holiday_hours_spent = 0
     try:
         sick_hours_spent = json_entry['sick_hours_spent']
+        employee.sick_hours -= sick_hours
     except KeyError:
         sick_hours_spent = 0
     try:
         vacation_hours_spent = json_entry['vacation_hours_spent']
+        employee.vacation_hours -= vacation_hours
     except KeyError:
         vacation_hours_spent = 0
+    employee.save()
     return PayPeriod(employee_id=employee_id, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
 
 @csrf_exempt
