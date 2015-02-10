@@ -1,0 +1,11 @@
+Use:
+curl -d <something from below> url
+
+Example:
+curl -d {\"employer_id\":\"8675-309\", \"employer_name\":\"Bigfoot\", \"address\":\"512 Bigfoot Ave\", \"key\":\"private_key\"} http://127.0.0.1:8000/addCompany
+
+Add Employer Example:
+{\"employer_id\":\"8675-309\", \"employer_name\":\"Bigfoot\", \"address\":\"512 Bigfoot Ave\", \"key\":\"private_key\"}
+
+Add Employee Example:
+{\"employee_id\":\"24.5\", \"employee_name\":\"Kevin\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}

@@ -1,6 +1,12 @@
 from django.shortcuts import render
+from django.http import Http404
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 from subprocess import call
 import datetime
+import json
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
 
 
@@ -108,33 +114,46 @@ def index(request):
     tex.close()
     return render(request, 'index.html', {})
 
-def checkEmployer(employer_id, employer_password):
-    #TODO: Implement this
-    return true
+def checkEmployer(employer_id, employer_key):
+    employer = Employer.objects.get(employer_id = employer_id)
+    return check_password(employer_key, employer.hash_key)
 
-#TODO: Probably remove this since we should manually add companies
+#TODO: remove this since we should manually add companies
+@csrf_exempt
 def addCompany(request):
     if request.method == 'POST':
-        json_data = json.load(request.body)
-        employer_id = json_data['employer_id']
-        employer_name = json_data['employer_name']
-        employer_address = json_data['employer_address']
-        employer_key = json_data['employer_key']
-        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key)
+        json_data = json.loads(request.body)
+        try:
+            employer_id = json_data['employer_id']
+            employer_name = json_data['employer_name']
+            employer_address = json_data['address']
+            employer_key = json_data['key']
+            employer_key = make_password(employer_key)
+        except KeyError:
+            raise Http404("Employer info not found")
+        curDate = datetime.datetime.now()
+        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key, pay_start=curDate, pay_end=curDate)
         employer.save()
         return HttpResponse("Successfully created entry for %s." % employer_name) 
-    HttpResponseServerError("Error, request wasn't POST")
+    raise Http404("Error, request wasn't POST")
 
+@csrf_exempt
 def addEmployee(request):
     if request.method == 'POST':
-        json_data = json.load(request.body)
-        employee_id = json_data['employee_id']
-        employer_id = json_data['employer_id']
-        employer_password = json_data['employer_key']
-        if not checkEmployer(employer_id, employer_password):
-            HttpResponseServerError("Invalid Employer ID/Key")
-        employee_name = json_data['employee_name']
-        employee_address = json_data['employee_address']
+        json_data = json.loads(request.body)
+        try:
+            employee_id = json_data['employee_id']
+            employer_id = json_data['employer_id']
+            employer_key = json_data['employer_key']
+        except KeyError:
+            raise Http404("EmployeeID, or employer info not found")
+        if not checkEmployer(employer_id, employer_key):
+            raise Http404("Invalid Employer ID/Key")
+        try:
+            employee_name = json_data['employee_name']
+            employee_address = json_data['employee_address']
+        except KeyError:
+            raise Http404("Employee info not found")
         try:
             vacation_hours = json_data['vacation_hours']
         except KeyError:
@@ -158,18 +177,26 @@ def addEmployee(request):
         employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
         employee.save()
         return HttpResponse("Successfully created entry for %s." % employee_name) 
-    HttpResponseServerError("Error, request wasn't POST")
+    raise Http404("Error, request wasn't POST")
 
+@csrf_exempt
 def addJob(request):
     if request.method == 'POST':
-        json_data = json.load(request.body)
-        job_id = json_data['job_id']
-        employee_id = json_data['employee_id']
-        employer_id = json_data['employer_id']
-        employer_password = json_data['employer_key']
-        if not checkEmployer(employer_id, employer_password) :
-            HttpResponseServerError("Invalid Employer ID/Key")
-        base_rate = json_data['base_rate']
+        json_data = json.loads(request.body)
+        try:
+            job_id = json_data['job_id']
+            job_title = json_data['job_title']
+            employee_id = json_data['employee_id']
+            employer_id = json_data['employer_id']
+            employer_key = json_data['employer_key']
+        except KeyError:
+            raise Http404("JobID, EmployeeID, or employer info not found")
+        if not checkEmployer(employer_id, employer_key) :
+            raise Http404("Invalid Employer ID/Key")
+        try:
+            base_rate = json_data['base_rate']
+        except KeyError:
+            base_rate = 0
         try:
             incremental_rate_1 = json_data['incremental_rate_1']
         except KeyError:
@@ -178,16 +205,18 @@ def addJob(request):
             incremental_rate_2 = json_data['incremental_rate_2']
         except KeyError:
             incremental_rate_2 = 0
-        job_title = json_data['job_title']
         job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
         job.save()
         return HttpResponse("Successfully created entry for %s." % employee_id) 
-    HttpResponseServerError("Error, request wasn't POST")
+    raise Http404("Error, request wasn't POST")
 
 def parseTimecardData(json_entry):
-    job_id = json_entry['job_id']
-    employee_id = json_entry['employee_id']
-    hours = json_entry['hours']
+    try:
+        job_id = json_entry['job_id']
+        employee_id = json_entry['employee_id']
+        hours = json_entry['hours']
+    except KeyError:
+        raise Http404("Invalid time card entry")
     try:
         overtime_hours = json_entry['overtime_hours']
     except KeyError:
@@ -230,18 +259,22 @@ def parseTimecardData(json_entry):
         vacation_hours_spent = 0
     return PayPeriod(employee_id=employee, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
 
+@csrf_exempt
 def addTimecardData(request):
     if request.method == 'POST':
-        json_data = json.load(request.body)
-        pay_period = json_data['pay_period']
-        employer_id = json_data['employer_id']
-        employer_password = json_data['employer_key']
-        if not checkEmployer(employer_id, employer_password) :
-            HttpResponseServerError("Invalid Employer ID/Key")
+        json_data = json.loads(request.body)
+        try:
+            pay_period = json_data['pay_period']
+            employer_id = json_data['employer_id']
+            employer_key = json_data['employer_key']
+        except KeyError:
+            raise Http404("Pay period or employer info not found")
+        if not checkEmployer(employer_id, employer_key) :
+            raise Http404("Invalid Employer ID/Key")
         for json_entry in json_data['timecard_data']:
             entry = parseTimecardData(json_entry)
             entry.pay_start = entry.pay_period.start
             entry.pay_end = entry.pay_period.end
             entry.save();
         return HttpResponse("Successfully added %d timecards." % len(json_data)) 
-    HttpResponseServerError("Error, request wasn't POST")
+    raise Http404("Error, request wasn't POST")
