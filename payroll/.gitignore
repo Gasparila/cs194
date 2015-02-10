@@ -25,6 +25,9 @@
 *.log
 *.sql
 *.sqlite
+*.aux
+*.pdf
+*.tex
  
 # OS generated files #
 ######################
