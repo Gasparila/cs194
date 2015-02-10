@@ -230,7 +230,7 @@ def addJob(request):
             incremental_rate_2 = json_data['incremental_rate_2']
         except KeyError:
             incremental_rate_2 = 0
-        job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
+        job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_rate_1, incremental_hours_2=incremental_rate_2, job_title = job_title)
         job.save()
         return HttpResponse("Successfully created entry for %s." % employee_id) 
     raise Http404("Error, request wasn't POST")
@@ -282,7 +282,7 @@ def parseTimecardData(json_entry):
         vacation_hours_spent = json_entry['vacation_hours_spent']
     except KeyError:
         vacation_hours_spent = 0
-    return PayPeriod(employee_id=employee, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
+    return PayPeriod(employee_id=employee_id, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
 
 @csrf_exempt
 def addTimecardData(request):
@@ -292,14 +292,15 @@ def addTimecardData(request):
             pay_period = json_data['pay_period']
             employer_id = json_data['employer_id']
             employer_key = json_data['employer_key']
+            timecard_entries = json_data['timecard_data']
         except KeyError:
             raise Http404("Pay period or employer info not found")
         if not checkEmployer(employer_id, employer_key) :
             raise Http404("Invalid Employer ID/Key")
-        for json_entry in json_data['timecard_data']:
+        for json_entry in timecard_entries:
             entry = parseTimecardData(json_entry)
-            entry.pay_start = entry.pay_period.start
-            entry.pay_end = entry.pay_period.end
+            entry.pay_start = datetime.datetime.strptime(pay_period["start"], "%m/%d/%y")
+            entry.pay_end = datetime.datetime.strptime(pay_period["end"], "%m/%d/%y")
             entry.save();
-        return HttpResponse("Successfully added %d timecards." % len(json_data)) 
+        return HttpResponse("Successfully added %d timecards." % len(timecard_entries))
     raise Http404("Error, request wasn't POST")

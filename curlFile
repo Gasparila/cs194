@@ -9,3 +9,9 @@ Add Employer Example:
 
 Add Employee Example:
 {\"employee_id\":\"24.5\", \"employee_name\":\"Kevin\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}
+
+Add Job Example:
+{\"job_id\":\"345\", \"job_title\":\"CEO\", \"employee_id\":\"24.5\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\", \"base_rate\":\"2000\", \"incremental_rate_1\":\"30\"}
+
+Add Pay Period Example:
+{\"pay_period\":{\"start\":\"2/1/15\",\"end\":\"2/15/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"345\",\"employee_id\":\"24.5\",\"hours\":\"44\",\"overtime_hours\":\"4\"}]}

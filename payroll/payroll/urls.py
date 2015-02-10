@@ -6,6 +6,7 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^$', 'index'),
     url(r'^addCompany$', 'addCompany'),
     url(r'^addEmployee$', 'addEmployee'),
+    url(r'^addJob$', 'addJob'),
     url(r'^submitTimecard$', 'addTimecardData'),
     url(r'^admin/', include(admin.site.urls)),
 )
