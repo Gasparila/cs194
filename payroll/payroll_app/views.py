@@ -284,8 +284,8 @@ def addTimecardData(request):
             raise Http404("Invalid Employer ID/Key")
         for json_entry in json_data['timecard_data']:
             entry = parseTimecardData(json_entry)
-            entry.pay_start = entry.pay_period.start
-            entry.pay_end = entry.pay_period.end
+            entry.pay_start = datetime.datetime.strptime(pay_period.start, "%m/%d/%y")
+            entry.pay_end = datetime.datetime.strptime(pay_period.end, "%m/%d/%y")
             entry.save();
         return HttpResponse("Successfully added %d timecards." % len(json_data)) 
     raise Http404("Error, request wasn't POST")
