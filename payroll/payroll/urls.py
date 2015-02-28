@@ -9,11 +9,12 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^addJob$', 'addJob'),
     url(r'^submitTimecard$', 'addTimecardData'),
     url(r'^getPayrollData$', 'getPayrollData'),
-    url(r'^AddBonus$', 'AddBonus'),
+    url(r'^addBonus$', 'addBonus'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', 'login'),
     url(r'^logout/', 'logout'),
     url(r'^createAccounts/', 'createAccounts'),
+    url(r'^employeeSearch/$', 'employeeSearch'),
 
 
 

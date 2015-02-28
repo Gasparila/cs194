@@ -10,11 +10,16 @@ from subprocess import call
 from decimal import *
 import datetime
 import json
-#import reportlab
+import reportlab
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
 from django.db import models
 from django.contrib import auth, messages
 from django.contrib.messages import get_messages
+
+def employeeSearch(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'employee_search.html', {})    
 
 # Create your views here.
 def index(request):
