@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
 
 # Create your models here.
 class Employer(models.Model):
@@ -62,6 +63,26 @@ class PayPeriod(models.Model):
 	def __str__(self):
 		DATE_FORMAT = "%m-%d-%Y" 
 		return 'employee_id: %s, job_id: %s, pay_start: %s, pay_end: %s, hours: %s, overtime_hours: %s, incremental_hours_1: %s, incremental_hours_2: %s, incremental_hours_1_and_2: %s, holiday_hours: %s, sick_hours: %s, vacation_hours: %s, holiday_hours_spent: %s, sick_hours_spent: %s, vacation_hours_spent: %s' % (self.employee_id, self.job_id, self.pay_start.strftime(DATE_FORMAT), self.pay_end.strftime(DATE_FORMAT), self.hours, self.overtime_hours, self.incremental_hours_1, self.incremental_hours_2, self.incremental_hours_1_and_2, self.holiday_hours, self.sick_hours, self.vacation_hours, self.holiday_hours_spent, self.sick_hours_spent, self.vacation_hours_spent)
+
+class AuthUserManager(BaseUserManager):
+	def create_user(self, email, password=None, **extrafields):
+		if not email:
+			raise ValueError('The given email must be set')
+		user = self.model(email=email)
+		user.set_password(password)
+		user.save(using=self._db)
+		return user
+
+class AuthUser(AbstractBaseUser, PermissionsMixin):
+	email = models.EmailField(verbose_name='email address', unique=True, max_length=255)
+	USERNAME_FIELD='email'
+	def get_first_name(self):
+		return self.first_name
+	def get_last_name(self):
+		return self.last_name
+	def __unicode__(self):
+		return self.email
+	objects = AuthUserManager()
 
 
 

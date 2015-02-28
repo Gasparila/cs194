@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,13 +10,48 @@ from subprocess import call
 from decimal import *
 import datetime
 import json
-import reportlab
-from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
-
+#import reportlab
+from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
+from django.db import models
+from django.contrib import auth, messages
+from django.contrib.messages import get_messages
 
 # Create your views here.
-@csrf_exempt
 def index(request):
+    #If the user is logged in, show them the dashboard
+    if request.user.is_authenticated(): return render(request, 'index.html', {})
+    #Try logging them in
+    email = request.POST.get('email')
+    password = request.POST.get('password')
+    user = auth.authenticate(username=email, password=password)
+    if user is not None:
+        if user.is_active:
+            auth.login(request, user)
+            return render(request, 'index.html', {})
+        else:
+            messages.add_message(request, messages.INFO, 'Inactive user account')
+            return redirect('login/')           
+    else:
+        if email is not None and password is not None: 
+            messages.add_message(request, messages.INFO, 'Invalid login information')
+        return redirect('login/')   
+
+def login(request):
+    storage = get_messages(request)
+    return render(request, 'login.html', {})
+
+def logout(request):
+    auth.logout(request)
+    return redirect('/')            
+
+def createAccounts(request):
+    user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
+    user.save()
+    return redirect('login/')           
+
+# Create your views here
+@csrf_exempt
+def getPayrollData(request):
 
     #Employer.objects.all().delete()
     #Employee.objects.all().delete()
@@ -149,10 +184,9 @@ def index(request):
         pdf_contents = f.read()
         f.close()
         return HttpResponse(pdf_contents, content_type='application/pdf')
-        #return render(request, 'index.html', {'pdfPath' : "pdf/tests.pdf"})
     
     tex.close()
-    return render(request, 'index.html', {})
+    return render(request, 'payroll_data.html', {})
 
 def checkEmployer(employer_id, employer_key):
     employer = Employer.objects.get(employer_id = employer_id)

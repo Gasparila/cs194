@@ -1,0 +1,17 @@
+{% load mathfilters %}
+{% load render_table from django_tables2 %}
+{% load staticfiles%}
+<!DOCTYPE html>
+<html style="width:100%;height:100%;">
+<body style="width:100%;height:100%;">
+
+<object data= "{% static pdfPath %}" type="application/pdf" style="width:100%;height:100%;">
+ 	
+  <p>It appears you don't have a PDF plugin for this browser.
+  No biggie... you can <a href={{ pdfPath }}">click here to
+  download the PDF file.</a></p>
+  
+</object>
+
+</body>
+</html>
