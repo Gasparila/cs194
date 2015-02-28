@@ -361,3 +361,34 @@ def addTimecardData(request):
             entry.save();
         return HttpResponse("Successfully added %d timecards." % len(timecard_entries))
     raise Http404("Error, request wasn't POST")
+
+@csrf_exempt
+def addBonus(request):
+    if request.method == 'POST':
+        cur_time = datetime.datetime.now()
+        json_data = json.loads(request.body)
+        try:
+            bonus_id = json_data['bonus_id']
+            employer_id = json_data['employer_id']
+            employer_key = json_data['employer_key']
+            employee_id = json_data['employee_id']
+            amount = json_data['bonus_amount']
+        except KeyError:
+            raise Http404("Bonus, employee, or employer info not found")
+        if not checkEmployer(employer_id, employer_key) :
+            raise Http404("Invalid Employer ID/Key")
+        try:
+            pay_start = datetime.datetime.strptime(json_data["pay_start"], "%m/%d/%y")
+        except KeyError:
+            pay_start = cur_time
+        try:
+            pay_end = datetime.datetime.strptime(json_period["pay_end"], "%m/%d/%y")
+        except KeyError:
+            pay_end = cur_time
+        try:
+            date_given = datetime.datetime.strptime(json_period["data_given"], "%m/%d/%y")
+        except KeyError:
+            date_given = cur_time
+        bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
+        bonus.save()
+    raise Http404("Error, request wasn't POST")
