@@ -230,8 +230,17 @@ def addEmployee(request):
             json_data = json.loads(request.body)
             employee_name = addEmployeeJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % employee_name) 
+        else if content_type == 'text/csv':
+            json_data_list = parse_employee_csv(request.body)
+            for json_data in json_data_list:
+                addEmployeeJSON(json_data)
+            return HttPResponse("Added %d employees." % len(json_data_list))
         raise Http404("Invalid application type")
    raise Http404("Error, request wasn't POST")
+
+def parse_employee_csv(csv_file):
+    #TODO:Implement
+
 
 def addEmployeeJSON(json_data):
     try:
@@ -279,8 +288,16 @@ def addJob(request):
             json_data = json.loads(request.body)
             job_title = addJobJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % job_title) 
+        else if content_type == 'text/csv':
+            json_data_list = parse_job_csv(request.body)
+            for json_data in json_data_list:
+                addJobJSON(json_data)
+            return HttPResponse("Added %d jobs." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
+
+def parse_job_csv(request.body):
+    #TODO: IMPLEMENT
 
 def addJobJSON(json_data):
     try:
@@ -374,8 +391,15 @@ def addTimecardData(request):
             json_data = json.loads(request.body)
             num_cards = addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
+        else if content_type == 'text/csv':
+            json_data_list = parse_timecard_csv(request.body)
+            num_cards = addTimecardDataJSON(json_data)
+            return HttPResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
+
+def parse_timecard_csv(request.body):
+    #TODO: IMPLEMENT
 
 def addTimecardDataJSON(json_data):
     try:
@@ -402,8 +426,16 @@ def addBonus(request):
             json_data = json.loads(request.body)
             employee_id = addBonusJSON(json_data)
             return HttpResponse("Successfully added bonus for employee id %s." % employee_id)
+        else if content_type == 'text/csv':
+            json_data_list = parse_bonus_csv(request.body)
+            for json_data in json_data_list:
+                addBonusJSON(json_data)
+            return HttPResponse("Added %d bonuses." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
+
+def parse_bonus_csv(request.body):
+    #TODO:IMPLEMENT
 
 def addBonusJSON(json_data):
     cur_time = datetime.datetime.now()
