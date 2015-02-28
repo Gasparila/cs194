@@ -201,8 +201,11 @@ def checkEmployer(employer_id, employer_key):
 @csrf_exempt
 def addCompany(request):
     if request.method == 'POST':
-        employer_name = addCompanyJSON(json.loads(request.body))
-        return HttpResponse("Successfully created entry for %s." % employer_name) 
+        content_type = request.META['CONTENT_TYPE']
+        if content_type == 'application/json':
+            employer_name = addCompanyJSON(json.loads(request.body))
+            return HttpResponse("Successfully created entry for %s." % employer_name) 
+        raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def addCompanyJSON(json_data):
@@ -222,10 +225,13 @@ def addCompanyJSON(json_data):
 @csrf_exempt
 def addEmployee(request):
     if request.method == 'POST':
-        json_data = json.loads(request.body)
-        employee_name = addEmployeeJSON(json_data)
-        return HttpResponse("Successfully created entry for %s." % employee_name) 
-    raise Http404("Error, request wasn't POST")
+        content_type = request.META['CONTENT_TYPE']
+        if content_type == 'application/json':
+            json_data = json.loads(request.body)
+            employee_name = addEmployeeJSON(json_data)
+            return HttpResponse("Successfully created entry for %s." % employee_name) 
+        raise Http404("Invalid application type")
+   raise Http404("Error, request wasn't POST")
 
 def addEmployeeJSON(json_data):
     try:
@@ -268,9 +274,12 @@ def addEmployeeJSON(json_data):
 @csrf_exempt
 def addJob(request):
     if request.method == 'POST':
-        json_data = json.loads(request.body)
-        job_title = addJobJSON(json_data)
-        return HttpResponse("Successfully created entry for %s." % job_title) 
+        content_type = request.META['CONTENT_TYPE']
+        if content_type == 'application/json':
+            json_data = json.loads(request.body)
+            job_title = addJobJSON(json_data)
+            return HttpResponse("Successfully created entry for %s." % job_title) 
+        raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def addJobJSON(json_data):
@@ -360,9 +369,12 @@ def parseTimecardData(json_entry):
 @csrf_exempt
 def addTimecardData(request):
     if request.method == 'POST':
-        json_data = json.loads(request.body)
-        num_cards = addTimecardDataJSON(json_data)
-        return HttpResponse("Successfully added %d timecards." % num_cards)
+        content_type = request.META['CONTENT_TYPE']
+        if content_type == 'application/json':
+            json_data = json.loads(request.body)
+            num_cards = addTimecardDataJSON(json_data)
+            return HttpResponse("Successfully added %d timecards." % num_cards)
+        raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def addTimecardDataJSON(json_data):
@@ -385,9 +397,12 @@ def addTimecardDataJSON(json_data):
 @csrf_exempt
 def addBonus(request):
     if request.method == 'POST':
-        json_data = json.loads(request.body)
-        employee_id = addBonusJSON(json_data)
-        return HttpResponse("Successfully added bonus for employee id %s." % employee_id)
+        content_type = request.META['CONTENT_TYPE']
+        if content_type == 'application/json':
+            json_data = json.loads(request.body)
+            employee_id = addBonusJSON(json_data)
+            return HttpResponse("Successfully added bonus for employee id %s." % employee_id)
+        raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def addBonusJSON(json_data):
