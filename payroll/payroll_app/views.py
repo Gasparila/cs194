@@ -269,32 +269,36 @@ def addEmployeeJSON(json_data):
 def addJob(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
-        try:
-            job_id = json_data['job_id']
-            job_title = json_data['job_title']
-            employee_id = json_data['employee_id']
-            employer_id = json_data['employer_id']
-            employer_key = json_data['employer_key']
-        except KeyError:
-            raise Http404("JobID, EmployeeID, or employer info not found")
-        if not checkEmployer(employer_id, employer_key) :
-            raise Http404("Invalid Employer ID/Key")
-        try:
-            base_rate = json_data['base_rate']
-        except KeyError:
-            base_rate = 0
-        try:
-            incremental_rate_1 = json_data['incremental_rate_1']
-        except KeyError:
-            incremental_rate_1 = 0
-        try:
-            incremental_rate_2 = json_data['incremental_rate_2']
-        except KeyError:
-            incremental_rate_2 = 0
-        job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_rate_1, incremental_hours_2=incremental_rate_2, job_title = job_title)
-        job.save()
-        return HttpResponse("Successfully created entry for %s." % employee_id) 
+        job_title = addJobJSON(json_data)
+        return HttpResponse("Successfully created entry for %s." % job_title) 
     raise Http404("Error, request wasn't POST")
+
+def addJobJSON(json_data):
+    try:
+        job_id = json_data['job_id']
+        job_title = json_data['job_title']
+        employee_id = json_data['employee_id']
+        employer_id = json_data['employer_id']
+        employer_key = json_data['employer_key']
+    except KeyError:
+        raise Http404("JobID, EmployeeID, or employer info not found")
+    if not checkEmployer(employer_id, employer_key) :
+        raise Http404("Invalid Employer ID/Key")
+    try:
+        base_rate = json_data['base_rate']
+    except KeyError:
+        base_rate = 0
+    try:
+        incremental_rate_1 = json_data['incremental_rate_1']
+    except KeyError:
+        incremental_rate_1 = 0
+    try:
+        incremental_rate_2 = json_data['incremental_rate_2']
+    except KeyError:
+        incremental_rate_2 = 0
+    job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_rate_1, incremental_hours_2=incremental_rate_2, job_title = job_title)
+    job.save()
+    return job_title
 
 def parseTimecardData(json_entry):
     try:
