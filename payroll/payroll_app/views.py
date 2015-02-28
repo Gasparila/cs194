@@ -201,62 +201,69 @@ def checkEmployer(employer_id, employer_key):
 @csrf_exempt
 def addCompany(request):
     if request.method == 'POST':
-        json_data = json.loads(request.body)
-        try:
-            employer_id = json_data['employer_id']
-            employer_name = json_data['employer_name']
-            employer_address = json_data['address']
-            employer_key = json_data['key']
-            employer_key = make_password(employer_key)
-        except KeyError:
-            raise Http404("Employer info not found")
-        curDate = datetime.datetime.now()
-        employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key, pay_start=curDate, pay_end=curDate)
-        employer.save()
+        employer_name = addCompanyJSON(json.loads(request.body))
         return HttpResponse("Successfully created entry for %s." % employer_name) 
     raise Http404("Error, request wasn't POST")
+
+def addCompanyJSON(json_data):
+    try:
+        employer_id = json_data['employer_id']
+        employer_name = json_data['employer_name']
+        employer_address = json_data['address']
+        employer_key = json_data['key']
+        employer_key = make_password(employer_key)
+    except KeyError:
+        raise Http404("Employer info not found")
+    curDate = datetime.datetime.now()
+    employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key, pay_start=curDate, pay_end=curDate)
+    employer.save()
+    return employer_name
 
 @csrf_exempt
 def addEmployee(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
-        try:
-            employee_id = json_data['employee_id']
-            employer_id = json_data['employer_id']
-            employer_key = json_data['employer_key']
-        except KeyError:
-            raise Http404("EmployeeID, or employer info not found")
-        if not checkEmployer(employer_id, employer_key):
-            raise Http404("Invalid Employer ID/Key")
-        try:
-            employee_name = json_data['employee_name']
-            employee_address = json_data['employee_address']
-        except KeyError:
-            raise Http404("Employee info not found")
-        try:
-            vacation_hours = json_data['vacation_hours']
-        except KeyError:
-            vacation_hours = 0 
-        try:
-            sick_hours = json_data['sick_hours']
-        except KeyError:
-            sick_hours = 0
-        try:
-            vacation_pay_rate = json_data['vacation_pay_rate']
-        except KeyError:
-            vacation_pay_rate = 0  
-        try:
-            sick_pay_rate = json_data['sick_pay_rate']
-        except KeyError:
-            sick_pay_rate = 0
-        try:
-            vacation_accrual_rate = json_data['vacation_accrual_rate']
-        except KeyError:
-            vacation_accrual_rate = 0    
-        employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
-        employee.save()
+        employee_name = addEmployeeJSON(json_data)
         return HttpResponse("Successfully created entry for %s." % employee_name) 
     raise Http404("Error, request wasn't POST")
+
+def addEmployeeJSON(json_data):
+    try:
+        employee_id = json_data['employee_id']
+        employer_id = json_data['employer_id']
+        employer_key = json_data['employer_key']
+    except KeyError:
+        raise Http404("EmployeeID, or employer info not found")
+    if not checkEmployer(employer_id, employer_key):
+        raise Http404("Invalid Employer ID/Key")
+    try:
+        employee_name = json_data['employee_name']
+        employee_address = json_data['employee_address']
+    except KeyError:
+        raise Http404("Employee info not found")
+    try:
+        vacation_hours = json_data['vacation_hours']
+    except KeyError:
+        vacation_hours = 0 
+    try:
+        sick_hours = json_data['sick_hours']
+    except KeyError:
+        sick_hours = 0
+    try:
+        vacation_pay_rate = json_data['vacation_pay_rate']
+    except KeyError:
+        vacation_pay_rate = 0  
+    try:
+        sick_pay_rate = json_data['sick_pay_rate']
+    except KeyError:
+        sick_pay_rate = 0
+    try:
+        vacation_accrual_rate = json_data['vacation_accrual_rate']
+    except KeyError:
+        vacation_accrual_rate = 0    
+    employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
+    employee.save()
+    return employee_name
 
 @csrf_exempt
 def addJob(request):
