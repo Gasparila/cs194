@@ -361,22 +361,26 @@ def parseTimecardData(json_entry):
 def addTimecardData(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
-        try:
-            pay_period = json_data['pay_period']
-            employer_id = json_data['employer_id']
-            employer_key = json_data['employer_key']
-            timecard_entries = json_data['timecard_data']
-        except KeyError:
-            raise Http404("Pay period or employer info not found")
-        if not checkEmployer(employer_id, employer_key) :
-            raise Http404("Invalid Employer ID/Key")
-        for json_entry in timecard_entries:
-            entry = parseTimecardData(json_entry)
-            entry.pay_start = datetime.datetime.strptime(pay_period["start"], "%m/%d/%y")
-            entry.pay_end = datetime.datetime.strptime(pay_period["end"], "%m/%d/%y")
-            entry.save();
-        return HttpResponse("Successfully added %d timecards." % len(timecard_entries))
+        num_cards = addTimecardDataJSON(json_data)
+        return HttpResponse("Successfully added %d timecards." % num_cards)
     raise Http404("Error, request wasn't POST")
+
+def addTimecardDataJSON(json_data):
+    try:
+        pay_period = json_data['pay_period']
+        employer_id = json_data['employer_id']
+        employer_key = json_data['employer_key']
+        timecard_entries = json_data['timecard_data']
+    except KeyError:
+        raise Http404("Pay period or employer info not found")
+    if not checkEmployer(employer_id, employer_key) :
+        raise Http404("Invalid Employer ID/Key")
+    for json_entry in timecard_entries:
+        entry = parseTimecardData(json_entry)
+        entry.pay_start = datetime.datetime.strptime(pay_period["start"], "%m/%d/%y")
+        entry.pay_end = datetime.datetime.strptime(pay_period["end"], "%m/%d/%y")
+        entry.save();
+    return len(timecard_entries)
 
 @csrf_exempt
 def addBonus(request):
