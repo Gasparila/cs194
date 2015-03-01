@@ -324,8 +324,29 @@ def addJob(request):
     raise Http404("Error, request wasn't POST")
 
 def parse_job_csv(csv_file):
-    #TODO: IMPLEMENT
-    return {}
+    data_list = []
+    lines = csv_file.splitlines()
+    for line in lines:
+        obj = {}
+        values = line.split(',')
+        if (values[0] != ""):
+            obj['job_id'] = values[0]
+        if (values[1] != ""):
+            obj['job_title'] = values[1]
+        if (values[2] != ""):
+            obj['employee_id'] = values[2]
+        if (values[3] != ""):
+            obj['employer_id'] = values[3]
+        if (values[4] != ""):
+            obj['employer_key'] = values[4]
+        if (values[5] != ""):
+            obj['base_rate'] = values[5]
+        if (values[6] != ""):
+            obj['incremental_rate_1'] = values[6]
+        if (values[7] != ""):
+            obj['incremental_rate_2'] = values[7]
+        data_list.append(obj)
+    return data_list
 
 def addJobJSON(json_data):
     try:
