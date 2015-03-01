@@ -9,6 +9,8 @@ curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"em
 
 Add Employee Example:
 curl -H "Content-Type: application/json" -d "{\"employee_id\":\"24.5\", \"employee_name\":\"Kevin\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}" http://127.0.0.1:8000/addEmployee > employee.html
+OR
+curl -H "Content-Type: text/csv" -d "24.5,8675-309,private_key,Kevin,234 Linton St,,,,,," http://127.0.0.1:8000/addEmployee > employee.html
 
 Add Job Example:
 curl -H "Content-Type: application/json" -d "{\"job_id\":\"345\", \"job_title\":\"CEO\", \"employee_id\":\"24.5\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\", \"base_rate\":\"60\", \"incremental_rate_1\":\"30\"}" http://127.0.0.1:8000/addJob > job.html

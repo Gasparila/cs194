@@ -233,14 +233,40 @@ def addEmployee(request):
         elif content_type == 'text/csv':
             json_data_list = parse_employee_csv(request.body)
             for json_data in json_data_list:
+                print (json_data)
                 addEmployeeJSON(json_data)
-            return HttPResponse("Added %d employees." % len(json_data_list))
+            return HttpResponse("Added %d employees." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def parse_employee_csv(csv_file):
-    #TODO:Implement
-    return {}
+    data_list = []
+    lines = csv_file.splitlines()
+    for line in lines:
+        obj = {}
+        values = line.split(',')
+        if (values[0] != ""):
+            obj['employee_id'] = values[0]
+        if (values[1] != ""):
+            obj['employer_id'] = values[1]
+        if (values[2] != ""):
+            obj['employer_key'] = values[2]
+        if (values[3] != ""):
+            obj['employee_name'] = values[3]
+        if (values[4] != ""):
+            obj['employee_address'] = values[4]
+        if (values[5] != ""):
+            obj['vacation_hours'] = values[5]
+        if (values[6] != ""):
+            obj['sick_hours'] = values[6]
+        if (values[7] != ""):
+            obj['vacation_pay_rate'] = values[7]
+        if (values[8] != ""):
+            obj['sick_pay_rate'] = values[8]
+        if (values[9] != ""):
+            obj['vacation_accrual_rate'] = values[9]
+        data_list.append(obj)
+    return data_list
 
 
 def addEmployeeJSON(json_data):
@@ -293,7 +319,7 @@ def addJob(request):
             json_data_list = parse_job_csv(request.body)
             for json_data in json_data_list:
                 addJobJSON(json_data)
-            return HttPResponse("Added %d jobs." % len(json_data_list))
+            return HttpResponse("Added %d jobs." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
@@ -396,7 +422,7 @@ def addTimecardData(request):
         elif content_type == 'text/csv':
             json_data_list = parse_timecard_csv(request.body)
             num_cards = addTimecardDataJSON(json_data)
-            return HttPResponse("Successfully added %d timecards." % num_cards)
+            return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
@@ -433,7 +459,7 @@ def addBonus(request):
             json_data_list = parse_bonus_csv(request.body)
             for json_data in json_data_list:
                 addBonusJSON(json_data)
-            return HttPResponse("Added %d bonuses." % len(json_data_list))
+            return HttpResponse("Added %d bonuses." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
