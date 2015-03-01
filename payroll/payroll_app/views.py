@@ -212,6 +212,8 @@ def addCompany(request):
 def addCompanyJSON(json_data):
     try:
         employer_id = json_data['employer_id']
+        if Employer.objects.filter(employer_id = employer_id).exists():
+            raise Http404("Company Already Exists")
         employer_name = json_data['employer_name']
         employer_address = json_data['address']
         employer_key = json_data['key']
@@ -279,7 +281,8 @@ def parse_employee_csv(csv_file):
 def addEmployeeJSON(json_data):
     try:
         employee_id = json_data['employee_id']
-        employer_id = json_data['employer_id']
+        if Employee.objects.filter(employee_id = employee_id).exists():
+            raise Http404("Employee %s Already Exists" % employee_id)
         employer_key = json_data['employer_key']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
@@ -364,6 +367,8 @@ def parse_job_csv(csv_file):
 def addJobJSON(json_data):
     try:
         job_id = json_data['job_id']
+        if Job.objects.filter(job_id = job_id).exists():
+            raise Http404("Job %s Already Exists" % employee_id)
         job_title = json_data['job_title']
         employee_id = json_data['employee_id']
         employer_id = json_data['employer_id']
