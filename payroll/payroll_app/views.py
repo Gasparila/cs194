@@ -441,15 +441,61 @@ def addTimecardData(request):
             num_cards = addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         elif content_type == 'text/csv':
-            json_data_list = parse_timecard_csv(request.body)
+            json_data = parse_timecard_csv(request.body)
+            print (json_data)
             num_cards = addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
 def parse_timecard_csv(csv_file):
-    #TODO: IMPLEMENT
-    return {}
+    data = {}
+    data_list = []
+    lines = csv_file.splitlines()
+    first = True
+    for line in lines:
+        obj = {}
+        values = line.split(',')
+        if first:
+            first = False
+            if (values[0] != "" and values[1] != ""):
+                pay_period_start = values[0]
+                pay_period_end = values[1]
+                data["pay_period"] = {"start":pay_period_start, "end":pay_period_end}
+            if (values[2] != ""):
+                data["employer_id"] = values[2]
+            if (values[3] != ""):
+                data["employer_key"] = values[3]
+            continue
+        if (values[0] != ""):
+            obj['job_id'] = values[0]
+        if (values[1] != ""):
+            obj['employee_id'] = values[1]
+        if (values[2] != ""):
+            obj['hours'] = values[2]
+        if (values[3] != ""):
+            obj['overtime_hours'] = values[3]
+        if (values[4] != ""):
+            obj['holiday_hours_spent'] = values[4]
+        if (values[5] != ""):
+            obj['sick_hours_spent'] = values[5]
+        if (values[6] != ""):
+            obj['vacation_hours_spent'] = values[6]
+        if (values[7] != ""):
+            obj['incremental_hours_1'] = values[7]
+        if (values[8] != ""):
+            obj['incremental_hours_2'] = values[8]
+        if (values[9] != ""):
+            obj['incremental_hours_1_and_2'] = values[9]
+        if (values[10] != ""):
+            obj['holiday_hours'] = values[10]
+        if (values[11] != ""):
+            obj['sick_hours'] = values[11]
+        if (values[12] != ""):
+            obj['vacation_hours'] = values[12]
+        data_list.append(obj)
+    data['timecard_data'] = data_list
+    return data
 
 def addTimecardDataJSON(json_data):
     try:

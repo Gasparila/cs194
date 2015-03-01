@@ -19,6 +19,9 @@ curl -H "Content-Type: text/csv" -d "345,CEO,24.5,8675-309,private_key,60,30," h
 
 Add Pay Period Example:
 curl -H "Content-Type: application/json" -d "{\"pay_period\":{\"start\":\"2/1/15\",\"end\":\"2/15/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"345\",\"employee_id\":\"24.5\",\"hours\":\"44\",\"overtime_hours\":\"4\",\"sick_hours\":4 ,\"vacation_hours\":\"4\",\"sick_hours_spent\":\"2\"}]}" http://127.0.0.1:8000/submitTimecard > timecard.html
+OR
+curl -H "Content-Type: text/csv" -d "2/1/15\,2/15/15,8675-309,private_key
+345,24.5,44,4,,2,,,,,,2,4" http://127.0.0.1:8000/submitTimecard > timecard.html
 
 Get TimeCard
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf
