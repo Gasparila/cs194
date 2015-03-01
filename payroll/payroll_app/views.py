@@ -242,30 +242,36 @@ def addEmployee(request):
 
 def parse_employee_csv(csv_file):
     data_list = []
+    metadata = {}
     lines = csv_file.splitlines()
+    first = True
     for line in lines:
         obj = {}
         values = line.split(',')
+        if first:
+            first = False
+            if (values[0] != ""):
+                metadata['employer_id'] = values[0]
+            if (values[1] != ""):
+                metadata['employer_key'] = values[1]
+            continue
+        obj = copy.deepcopy(metadata)
         if (values[0] != ""):
             obj['employee_id'] = values[0]
         if (values[1] != ""):
-            obj['employer_id'] = values[1]
+            obj['employee_name'] = values[1]
         if (values[2] != ""):
-            obj['employer_key'] = values[2]
+            obj['employee_address'] = values[2]
         if (values[3] != ""):
-            obj['employee_name'] = values[3]
+            obj['vacation_hours'] = values[3]
         if (values[4] != ""):
-            obj['employee_address'] = values[4]
+            obj['sick_hours'] = values[4]
         if (values[5] != ""):
-            obj['vacation_hours'] = values[5]
+            obj['vacation_pay_rate'] = values[5]
         if (values[6] != ""):
-            obj['sick_hours'] = values[6]
+            obj['sick_pay_rate'] = values[6]
         if (values[7] != ""):
-            obj['vacation_pay_rate'] = values[7]
-        if (values[8] != ""):
-            obj['sick_pay_rate'] = values[8]
-        if (values[9] != ""):
-            obj['vacation_accrual_rate'] = values[9]
+            obj['vacation_accrual_rate'] = values[7]
         data_list.append(obj)
     return data_list
 
@@ -327,9 +333,19 @@ def addJob(request):
 def parse_job_csv(csv_file):
     data_list = []
     lines = csv_file.splitlines()
+    first = True
+    metadata = {}
     for line in lines:
         obj = {}
         values = line.split(',')
+        if first:
+            first = False
+            if (values[0] != ""):
+                metadata['employer_id'] = values[0]
+            if (values[1] != ""):
+                metadata['employer_key'] = values[1]
+            continue
+        obj = copy.deepcopy(metadata)
         if (values[0] != ""):
             obj['job_id'] = values[0]
         if (values[1] != ""):
@@ -337,15 +353,11 @@ def parse_job_csv(csv_file):
         if (values[2] != ""):
             obj['employee_id'] = values[2]
         if (values[3] != ""):
-            obj['employer_id'] = values[3]
+            obj['base_rate'] = values[3]
         if (values[4] != ""):
-            obj['employer_key'] = values[4]
+            obj['incremental_rate_1'] = values[4]
         if (values[5] != ""):
-            obj['base_rate'] = values[5]
-        if (values[6] != ""):
-            obj['incremental_rate_1'] = values[6]
-        if (values[7] != ""):
-            obj['incremental_rate_2'] = values[7]
+            obj['incremental_rate_2'] = values[5]
         data_list.append(obj)
     return data_list
 
