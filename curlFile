@@ -23,5 +23,9 @@ OR
 curl -H "Content-Type: text/csv" -d "2/1/15\,2/15/15,8675-309,private_key
 345,24.5,44,4,,2,,,,,,2,4" http://127.0.0.1:8000/submitTimecard > timecard.html
 
+Add Bonus Example:
+curl -H "Content-Type: text/csv" -d "8675-309,private_key,2/1/15\,2/15/15,,
+1244,24.5,5000" http://127.0.0.1:8000/addBonus > bonus.html
+
 Get TimeCard
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf

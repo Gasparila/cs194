@@ -1,20 +1,21 @@
-from django.shortcuts import render, redirect
-from django.http import Http404
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.db import models
+from django.contrib import auth, messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.contrib.messages import get_messages
+from django.http import Http404
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from decimal import *
 from tempfile import *
+from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
 from subprocess import Popen, PIPE
 from subprocess import call
-from decimal import *
+import copy
 import datetime
 import json
 import reportlab
-from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
-from django.db import models
-from django.contrib import auth, messages
-from django.contrib.messages import get_messages
 
 def employeeSearch(request):
     if not request.user.is_authenticated(): return redirect('login/')   
@@ -459,7 +460,7 @@ def parse_timecard_csv(csv_file):
         if first:
             first = False
             if (values[0] != "" and values[1] != ""):
-                pay_period_start = values[0]
+                pay_period_start = values[0] 
                 pay_period_end = values[1]
                 data["pay_period"] = {"start":pay_period_start, "end":pay_period_end}
             if (values[2] != ""):
@@ -531,8 +532,36 @@ def addBonus(request):
     raise Http404("Error, request wasn't POST")
 
 def parse_bonus_csv(csv_file):
-    #TODO:IMPLEMENT
-    return {}
+    metadata = {}
+    data_list = []
+    lines = csv_file.splitlines()
+    first = True
+    for line in lines:
+        obj = {}
+        values = line.split(',')
+        if first:
+            first = False
+            if (values[0] != ""):
+                metadata['employer_id'] = values[0]
+            if (values[1] != ""):
+                metadata['employer_key'] = values[1]
+            if (values[2] != ""):
+                metadata["pay_start"] = values[2]
+            if (values[3] != ""):
+                metadata["pay_end"] = values[3]
+            if (values[4] != ""):
+                metadata["data_given"] = values[4]
+            continue
+        obj = copy.deepcopy(metadata)
+        if (values[0] != ""):
+            obj['bonus_id'] = values[0]
+        if (values[1] != ""):
+            obj['employee_id'] = values[1]
+        if (values[2] != ""):
+            obj['bonus_amount'] = values[2]
+        data_list.append(obj)
+    print(data_list)
+    return data_list
 
 def addBonusJSON(json_data):
     cur_time = datetime.datetime.now()
@@ -551,11 +580,11 @@ def addBonusJSON(json_data):
     except KeyError:
         pay_start = cur_time
     try:
-        pay_end = datetime.datetime.strptime(json_period["pay_end"], "%m/%d/%y")
+        pay_end = datetime.datetime.strptime(json_data["pay_end"], "%m/%d/%y")
     except KeyError:
         pay_end = cur_time
     try:
-        date_given = datetime.datetime.strptime(json_period["data_given"], "%m/%d/%y")
+        date_given = datetime.datetime.strptime(json_data["data_given"], "%m/%d/%y")
     except KeyError:
         date_given = cur_time
     bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
