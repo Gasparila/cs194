@@ -236,7 +236,6 @@ def addEmployee(request):
         elif content_type == 'text/csv':
             json_data_list = parse_employee_csv(request.body)
             for json_data in json_data_list:
-                print (json_data)
                 addEmployeeJSON(json_data)
             return HttpResponse("Added %d employees." % len(json_data_list))
         raise Http404("Invalid application type")
@@ -460,7 +459,6 @@ def addTimecardData(request):
             return HttpResponse("Successfully added %d timecards." % num_cards)
         elif content_type == 'text/csv':
             json_data = parse_timecard_csv(request.body)
-            print (json_data)
             num_cards = addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
@@ -537,7 +535,8 @@ def addDailyTimecardData(request):
     if request.method == 'POST':
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'text/csv':
-            num_cards = add_daily_timecard_data_csv(request.body)
+            json_data = add_daily_timecard_data_csv(request.body)
+            num_cards = addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -547,6 +546,7 @@ def add_daily_timecard_data_csv(csv_file):
     data_list = []
     lines = csv_file.splitlines()
     first = True
+    days_in_period = 0
     for line in lines:
         obj = {}
         values = line.split(',')
@@ -560,36 +560,43 @@ def add_daily_timecard_data_csv(csv_file):
                 data["employer_id"] = values[2]
             if (values[3] != ""):
                 data["employer_key"] = values[3]
+            if (values[4] != ""):
+                days_in_period = int(values[4])
             continue
+        obj['hours'] = 0
+        obj['overtime_hours'] = 0
+        obj['holiday_hours_spent'] = 0
+        obj['sick_hours_spent'] = 0
+        obj['vacation_hours_spent'] = 0
+        obj['incremental_hours_1'] = 0
+        obj['incremental_hours_2'] = 0
+        obj['incremental_hours_1_and_2'] = 0
         if (values[0] != ""):
             obj['job_id'] = values[0]
         if (values[1] != ""):
             obj['employee_id'] = values[1]
-        if (values[2] != ""):
-            obj['hours'] = values[2]
-        if (values[3] != ""):
-            obj['overtime_hours'] = values[3]
-        if (values[4] != ""):
-            obj['holiday_hours_spent'] = values[4]
-        if (values[5] != ""):
-            obj['sick_hours_spent'] = values[5]
-        if (values[6] != ""):
-            obj['vacation_hours_spent'] = values[6]
-        if (values[7] != ""):
-            obj['incremental_hours_1'] = values[7]
-        if (values[8] != ""):
-            obj['incremental_hours_2'] = values[8]
-        if (values[9] != ""):
-            obj['incremental_hours_1_and_2'] = values[9]
-        if (values[10] != ""):
-            obj['holiday_hours'] = values[10]
-        if (values[11] != ""):
-            obj['sick_hours'] = values[11]
-        if (values[12] != ""):
-            obj['vacation_hours'] = values[12]
+        for i in range(2, 2 * days_in_period + 2, 2):
+            if (values[i] != "" and values[i + 1] == ""):
+                obj['hours'] += values[i]
+                obj['overtime_hours'] += calculate_overtime(obj)
+            if (values[i + 1].lower() == "vacation"):
+                obj['vacation_hours_spent'] += int(values[i + 1])
+            if (values[i + 1].lower() == "holiday"):
+                obj['holiday_hours_spent'] += int(values[i + 1])
+            if (values[i + 1].lower() == "sick"):
+                obj['sick_hours_spent'] += int(values[i + 1])
+            if (values[i + 1].lower() == "incremental"):
+                obj['incremental_hours_1'] += int(values[i + 1])
+            if (values[i + 1].lower() == "incremental2"):
+                obj['incremental_hours_2'] += int(values[i + 1])
+            if (values[i + 1].lower() == "incremental incremental2"):
+                obj['incremental_hours_1_and_2'] += int(values[i + 1])
         data_list.append(obj)
     data['timecard_data'] = data_list
     return data
+
+def calculate_overtime(employee):
+    return 0 #TODO: Implement
 
 @csrf_exempt
 def addBonus(request):
@@ -636,7 +643,6 @@ def parse_bonus_csv(csv_file):
         if (values[2] != ""):
             obj['bonus_amount'] = values[2]
         data_list.append(obj)
-    print(data_list)
     return data_list
 
 def addBonusJSON(json_data):
