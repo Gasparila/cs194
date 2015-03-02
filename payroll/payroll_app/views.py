@@ -13,7 +13,146 @@ import json
 import reportlab
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod
 
+def employeeBuilder( start_time, end_time, employee_id, employer_id):
+    employer = Employer.objects.get(employer_id = employer_id)
+    tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
+    payperiod1 = PayPeriod.objects.all().filter(employee_id=employee_id)
+    payperiod1 = payperiod1.filter(pay_start__gte = start_time)
+    payperiod1 = payperiod1.filter(pay_end__lte = end_time)
+    employee = Employee.objects.all().get(employee_id = employee_id)
+    jobs = Job.objects.all().filter(employee_id = employee_id)
+    employee_info = "To: " + employee.employee_name + "\\\\\nAddress: " + employee.address + "\\\\\n\n"  
+    tex_file += employee_info;
+    employer_info = "From: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
+    tex_file += employer_info
+    for payperiod in payperiod1:
+        for job in jobs:
+            if job.job_id == payperiod.job_id:
+                payPeriod_info = "Pay Period: " + str(payperiod.pay_start.strftime('%b %d, %Y')) + " to " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " \\\\\nJob: " + job.job_title + " \\\\\n\n"
+                tex_file += payPeriod_info
+                table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours} & \\textbf{Rate} & \\textbf{Payment} \\\\\n\\hline\n"      
+                tex_file += table_start
+                base_pay =  payperiod.hours * job.base_rate;
+                base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(base_pay) + " \\\\\n\\hline\n"   
+                tex_file += base_row 
+                total = base_pay;
+                if payperiod.overtime_hours > 0: 
+                    overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
+                    total = total + overtime_pay
+                    overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(overtime_pay) + " \\\\\n\\hline\n"   
+                    tex_file +=overtime_row; 
+                if payperiod.incremental_hours_1 > 0:
+                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                    total = total + incremental_pay1
+                    incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.base_rate + job.incremental_hours_1)) + " & " + str(incremental_pay1) + " \\\\\n\\hline\n"   
+                    tex_file +=incremental_row1; 
+                if payperiod.incremental_hours_2 > 0:
+                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
+                    incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str((job.base_rate + job.incremental_hours_2)) + " & " + str(incremental_pay2) + " \\\\\n\\hline\n"   
+                    total = total + incremental_pay2
+                    tex_file +=incremental_row2;
+                if payperiod.incremental_hours_1_and_2 > 0:
+                    incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
+                    incremental_row12 = "Incremental 1 and 2 & " + str(payperiod.incremental_hours_1_and_2) + " & " + str((job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)) + " & " + str(incremental_pay12) + " \\\\\n\\hline\n"   
+                    total = total + incremental_pay12
+                    tex.write(incremental_row12);
+                if payperiod.vacation_hours_spent > 0:
+                    vacation_rate = employee.vacation_pay_rate
+                    if vacation_rate == 0: 
+                        vacation_rate = job.base_rate
+                    vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
+                    total = total + vacation_pay
+                    vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
+                    tex_file += vacation_row; 
+                if payperiod.sick_hours_spent > 0:
+                    sick_rate = employee.sick_pay_rate;
+                    if sick_rate == 0: 
+                        sick_rate = job.base_rate
+                    sick_pay =  payperiod.sick_hours_spent * (sick_rate);
+                    total = total + sick_pay
+                    sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
+                    tex_file += sick_row;
+                if payperiod.holiday_hours_spent > 0:
+                    holiday_pay_rate = employee.vacation_pay_rate;
+                    if holiday_pay_rate  == 0: 
+                        holiday_pay_rate  = job.base_rate
+                    holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
+                    total = total + holiday_pay                        
+                    holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
+                    tex_file +=holiday_row;
+                total_row = "\\textbf{Total} & & & \\textbf{" + str(total) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
+                tex_file +=total_row;
+                table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours Gained} & \\textbf{Total} \\\\\n\\hline\n"
+                tex_file += table_start;
+                vacation_row = "Vacation Hours & " + str(payperiod.vacation_hours) + " & " + str((employee.vacation_hours)) +" \\\\\n\\hline\n" 
+                sick_row = "Sick Hours & " + str(payperiod.sick_hours) + " & " + str((employee.sick_hours)) +" \\\\\n\\hline\n" 
+                tex_file += vacation_row
+                tex_file += sick_row
+                table_end = "\\end{tabular}\n\\end{table}\n\n\n"
+                tex_file += table_end
+    tex_file += "\\end{document}"
+    return tex_file
 
+def employerBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent):
+    employer = Employer.objects.get(employer_id = employer_id)
+    tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
+    employees = Employee.objects.all().filter(employer_id = employer_id)
+    employer_info = "To: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
+    tex_file += employer_info
+    table = "| l | l | l | l | l | l |"
+    for i in range(columns):
+        table += " l |"
+    table_start = "\\begin{table}[htb]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
+    tex_file +=table_start
+    for employee in employees: 
+        employee_id = employee.employee_id
+        payperiod1 = PayPeriod.objects.all().filter(employee_id=employee_id)
+        payperiod1 = payperiod1.filter(pay_start__gte = start_time)
+        payperiod1 = payperiod1.filter(pay_end__lte = end_time)
+        jobs = Job.objects.all().filter(employee_id = employee_id)
+        for payperiod in payperiod1:
+            for job in jobs:
+                if job.job_id == payperiod.job_id:
+                    all_row = employee.employee_name + " & " + job.job_title + " & " + str(payperiod.pay_start.strftime('%b %d, %Y')) + " & " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " & "
+                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours +  payperiod.incremental_hours_1 + payperiod.incremental_hours_2 + payperiod.incremental_hours_1_and_2
+                    base_pay =  payperiod.hours * job.base_rate;
+                    total = base_pay;
+                    if payperiod.overtime_hours > 0: 
+                        overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
+                        total = total + overtime_pay
+                    if payperiod.incremental_hours_1 > 0:
+                        incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                        total = total + incremental_pay1
+                    if payperiod.incremental_hours_2 > 0:
+                        incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
+                        total = total + incremental_pay2;
+                    if payperiod.incremental_hours_1_and_2 > 0:
+                        incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
+                        total = total + incremental_pay12;
+                    if payperiod.vacation_hours_spent > 0:
+                        vacation_rate = employee.vacation_pay_rate
+                        if vacation_rate == 0: 
+                            vacation_rate = job.base_rate
+                        vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
+                        total = total + vacation_pay
+                    if payperiod.sick_hours_spent > 0:
+                        sick_rate = employee.sick_pay_rate;
+                        if sick_rate == 0: 
+                            sick_rate = job.base_rate
+                        sick_pay =  payperiod.sick_hours_spent * (sick_rate);
+                        total = total + sick_pay
+                    if payperiod.holiday_hours_spent > 0:
+                        holiday_pay_rate = employee.vacation_pay_rate;
+                        if holiday_pay_rate  == 0: 
+                            holiday_pay_rate  = job.base_rate
+                        holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
+                        total = total + holiday_pay   
+                    all_row = all_row + "" + str(total_hours) + " & " + str(total) + "\\\\\n\\hline\n"    
+                    tex_file += all_row;                 
+    end_table = "\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
+    tex_file += end_table;
+    tex_file += "\\end{document}"
+    return tex_file
 # Create your views here.
 @csrf_exempt
 def index(request):
@@ -50,9 +189,12 @@ def index(request):
     #payPeriod1.save()
 
     json_data = json.loads(request.body)
+
     try:
         employer_id = json_data['employer_id']
         employer_key = json_data['key']
+        start = json_data['start']
+        end = json_data['end']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
     if not checkEmployer(employer_id, employer_key):
@@ -61,96 +203,77 @@ def index(request):
         employee_id = json_data['employee_id']
     except KeyError:
         raise Http404("Employee info not found")
+
+    columns = 0;
+    try:
+        show_incremental_hours = json_data['incremental_hours']
+        columns += 3;
+        show_incremental_hours = True
+    except KeyError:
+        show_incremental_hours = False 
+    try:
+        show_overtime_hours = json_data['overtime_hours']
+        show_overtime_hours = True
+        columns+=1;
+    except KeyError:
+        show_overtime_hours = False 
+    try:
+        show_holiday_hours = json_data['holiday_hours']
+        show_holiday_hours = True
+        columns+=1;
+    except KeyError:
+        show_holiday_hours = False
+    try:
+        show_vacation_hours = json_data['vacation_hours']
+        columns+=1;
+        show_vacation_hours = True
+    except KeyError:
+        show_vacation_hours = False
+    try:
+        show_sick_hours = json_data['sick_hours']
+        columns+=1;
+        show_sick_hours = True
+    except KeyError:
+        show_sick_hours = False
+    try:
+        show_holiday_hours_spent = json_data['holiday_hours_spent']
+        columns+=1;
+        show_holiday_hours_spent = True
+    except KeyError:
+        show_holiday_hours_spent = False
+    try:
+        show_vacation_hours_spent = json_data['vacation_hours_spent']
+        columns+=1;
+        show_vacation_hours_spent = True
+    except KeyError:
+        show_vacation_hours_spent = False
+    try:
+        show_sick_hours_spent = json_data['sick_hours_spent']
+        columns+=1;
+        show_sick_hours_spent = True
+    except KeyError:
+        show_sick_hours_spent = False
+
+    start_time = datetime.datetime.strptime(start, "%m/%d/%y")
+    end_time = datetime.datetime.strptime(end, "%m/%d/%y")
     tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
     pdf_name = employer_id + "_" + employee_id + ".pdf"
+    
     tex = open( tex_name,'w')
-    tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
-    tex.write(tex_file)
-
     employer = Employer.objects.get(employer_id = employer_id)
     if employer_id ==  employer.employer_id: 
-        payperiod1 = PayPeriod.objects.all().filter(employee_id=employee_id)
-        employee = Employee.objects.all().get(employee_id = employee_id)
-        jobs = Job.objects.all().filter(employee_id = employee_id)
-        employee_info = "To: " + employee.employee_name + "\\\\\nAddress: " + employee.address + "\\\\\n\n"  
-        tex.write(employee_info);
-        employer_info = "From: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
-        tex.write(employer_info)
-        for payperiod in payperiod1:
-            for job in jobs:
-                if job.job_id == payperiod.job_id:
-                    payPeriod_info = "Pay Period: " + str(payperiod.pay_start.strftime('%b %d, %Y')) + " to " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " \\\\\nJob: " + job.job_title + " \\\\\n\n"
-                    tex.write(payPeriod_info)
-                    table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours} & \\textbf{Rate} & \\textbf{Payment} \\\\\n\\hline\n"      
-                    tex.write(table_start)
-                    base_pay =  payperiod.hours * job.base_rate;
-                    base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(base_pay) + " \\\\\n\\hline\n"   
-                    tex.write(base_row); 
-                    total = base_pay;
-                    if payperiod.overtime_hours > 0: 
-                        overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
-                        total = total + overtime_pay
-                        overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(overtime_pay) + " \\\\\n\\hline\n"   
-                        tex.write(overtime_row); 
-                    if payperiod.incremental_hours_1 > 0:
-                        incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
-                        total = total + incremental_pay1
-                        incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.base_rate + job.incremental_hours_1)) + " & " + str(incremental_pay1) + " \\\\\n\\hline\n"   
-                        tex.write(incremental_row1); 
-                    if payperiod.incremental_hours_2 > 0:
-                        incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
-                        incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str((job.base_rate + job.incremental_hours_2)) + " & " + str(incremental_pay2) + " \\\\\n\\hline\n"   
-                        total = total + incremental_pay2
-                        tex.write(incremental_row2);
-                    if payperiod.incremental_hours_1_and_2 > 0:
-                        incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
-                        incremental_row12 = "Incremental 1 and 2 & " + str(payperiod.incremental_hours_1_and_2) + " & " + str((job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)) + " & " + str(incremental_pay12) + " \\\\\n\\hline\n"   
-                        total = total + incremental_pay12
-                        tex.write(incremental_row12);
-                    if payperiod.vacation_hours_spent > 0:
-                        vacation_rate = employee.vacation_pay_rate
-                        if vacation_rate == 0: 
-                            vacation_rate = job.base_rate
-                        vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
-                        total = total + vacation_pay
-                        vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
-                        tex.write(vacation_row); 
-                    if payperiod.sick_hours_spent > 0:
-                        sick_rate = employee.sick_pay_rate;
-                        if sick_rate == 0: 
-                            sick_rate = job.base_rate
-                        sick_pay =  payperiod.sick_hours_spent * (sick_rate);
-                        total = total + sick_pay
-                        sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
-                        tex.write(sick_row);
-                    if payperiod.holiday_hours_spent > 0:
-                        holiday_pay_rate = employee.vacation_pay_rate;
-                        if holiday_pay_rate  == 0: 
-                            holiday_pay_rate  = job.base_rate
-                        holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
-                        total = total + holiday_pay                        
-                        holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
-                        tex.write(holiday_row);
-                    total_row = "\\textbf{Total} & & & \\textbf{" + str(total) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
-                    tex.write(total_row);
-
-                    table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours Gained} & \\textbf{Total} \\\\\n\\hline\n"
-                    tex.write(table_start);
-                    vacation_row = "Vacation Hours & " + str(payperiod.vacation_hours) + " & " + str((employee.vacation_hours)) +" \\\\\n\\hline\n" 
-                    sick_row = "Sick Hours & " + str(payperiod.sick_hours) + " & " + str((employee.sick_hours)) +" \\\\\n\\hline\n" 
-                    tex.write(vacation_row)
-                    tex.write(sick_row)
-                    table_end = "\\end{tabular}\n\\end{table}\n\n\n"
-                    tex.write(table_end)
-        tex.write("\\end{document}")
+        if employee_id != "*":
+            emplyee_tex = employeeBuilder( start_time, end_time, employee_id, employer_id);
+            tex.write(emplyee_tex);
+        else:
+            employer_tex = employerBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent );
+            tex.write(employer_tex);
         tex.close();
         call("pdflatex -output-directory payroll_app/static/pdf " + tex_name, shell=True)
         f = open("payroll_app/static/pdf/" + pdf_name , 'r')
         pdf_contents = f.read()
         f.close()
-        return HttpResponse(pdf_contents, content_type='application/pdf')
-        #return render(request, 'index.html', {'pdfPath' : "pdf/tests.pdf"})
-    
+        return HttpResponse(pdf_contents, content_type='application/pdf')    
     tex.close()
     return render(request, 'index.html', {})
 

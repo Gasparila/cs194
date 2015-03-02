@@ -10,11 +10,25 @@ curl -d "{\"employer_id\":\"8675-309\", \"employer_name\":\"Bigfoot\", \"address
 Add Employee Example:
 curl -d "{\"employee_id\":\"24.5\", \"employee_name\":\"Kevin\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}" http://127.0.0.1:8000/addEmployee > employee.html
 
+curl -d "{\"employee_id\":\"23.5\", \"employee_name\":\"Danial\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}" http://127.0.0.1:8000/addEmployee > employee.html
+
+curl -d "{\"employee_id\":\"22.5\", \"employee_name\":\"Naveen\", \"employee_address\":\"234 Linton St\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\"}" http://127.0.0.1:8000/addEmployee > employee.html
+
 Add Job Example:
 curl -d "{\"job_id\":\"345\", \"job_title\":\"CEO\", \"employee_id\":\"24.5\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\", \"base_rate\":\"60\", \"incremental_rate_1\":\"30\"}" http://127.0.0.1:8000/addJob > job.html
+
+curl -d "{\"job_id\":\"346\", \"job_title\":\"CFO\", \"employee_id\":\"23.5\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\", \"base_rate\":\"70\", \"incremental_rate_1\":\"30\"}" http://127.0.0.1:8000/addJob > job.html
+
+curl -d "{\"job_id\":\"347\", \"job_title\":\"VP\", \"employee_id\":\"22.5\", \"employer_id\":\"8675-309\", \"employer_key\":\"private_key\", \"base_rate\":\"60\", \"incremental_rate_1\":\"30\"}" http://127.0.0.1:8000/addJob > job.html
 
 Add Pay Period Example:
 curl -d "{\"pay_period\":{\"start\":\"2/1/15\",\"end\":\"2/15/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"345\",\"employee_id\":\"24.5\",\"hours\":\"44\",\"overtime_hours\":\"4\",\"sick_hours\":4 ,\"vacation_hours\":\"4\",\"sick_hours_spent\":\"2\"}]}" http://127.0.0.1:8000/submitTimecard > timecard.html
 
+curl -d "{\"pay_period\":{\"start\":\"2/1/15\",\"end\":\"2/15/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"346\",\"employee_id\":\"23.5\",\"hours\":\"47\",\"overtime_hours\":\"8\",\"sick_hours\":2 ,\"vacation_hours\":\"1\",\"sick_hours_spent\":\"2\"}]}" http://127.0.0.1:8000/submitTimecard > timecard.html
+
+curl -d "{\"pay_period\":{\"start\":\"2/1/15\",\"end\":\"2/15/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"347\",\"employee_id\":\"22.5\",\"hours\":\"24\",\"overtime_hours\":\"4\",\"sick_hours\":4 ,\"vacation_hours\":\"4\",\"sick_hours_spent\":\"2\"}]}" http://127.0.0.1:8000/submitTimecard > timecard.html
+
+curl -d "{\"pay_period\":{\"start\":\"1/20/15\",\"end\":\"1/30/15\"},\"employer_id\":\"8675-309\",\"employer_key\":\"private_key\",\"timecard_data\":[{\"job_id\":\"347\",\"employee_id\":\"22.5\",\"hours\":\"24\",\"overtime_hours\":\"4\",\"sick_hours\":4 ,\"vacation_hours\":\"4\",\"sick_hours_spent\":\"2\"}]}" http://127.0.0.1:8000/submitTimecard > timecard.html
+
 Get TimeCard
-curl -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf
+curl -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"start\":\"2/1/15\",\"end\":\"2/15/15\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf

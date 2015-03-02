@@ -27,7 +27,9 @@ class Job(models.Model):
 	employee_id = models.CharField(max_length=100)
 	base_rate = models.DecimalField(max_digits = 8, decimal_places = 2)
 	incremental_hours_1 = models.DecimalField(max_digits = 8, decimal_places = 2)
+	#incremental_name_1 
 	incremental_hours_2 = models.DecimalField(max_digits = 8, decimal_places = 2)
+	#incremental_name_2 
 	job_title =  models.CharField(max_length=100)
 
 class BonusPay(models.Model):
