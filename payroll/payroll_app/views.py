@@ -16,6 +16,65 @@ import copy
 import datetime
 import json
 import reportlab
+def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent):
+    employer = Employer.objects.get(employer_id = employer_id)
+    employees = Employee.objects.all().filter(employer_id = employer_id)
+    employer_info = "To:, " + employer.employer_name + "\nAddress:, " + employer.address + "\n\n"  
+    tex_file = employer_info
+    allTotal = 0;
+    table_start = "Employee, Job, Start Date, End Date, Base Hours, Base Rate, Base Payment, Overtime Hours, Overtime Rate, Overtime Payment, Incremental 1 Hours, Incremntal 1 Rate, Incremntal 1 Payment, Incremental 2 Hours, Incremntal 2 Rate, Incremntal 2 Payment, Incremental 1_2 Hours, Incremntal 1_2 Rate, Incremntal 1_2 Payment, Vacation Hours Spent, Vacation Rate, Vacation Payment, Sick Hours Spent, Sick Rate, Sick Payment, Holiday Hours Spent, Holiday Rate, Holiday Payment, Sick Hours Acquired, Vacation Hours Acquired, Total Hours, Total Payment \n"      
+    tex_file +=table_start
+    for employee in employees: 
+        employee_id = employee.employee_id
+        payperiod1 = PayPeriod.objects.all().filter(employee_id=employee_id)
+        payperiod1 = payperiod1.filter(pay_start__gte = start_time)
+        payperiod1 = payperiod1.filter(pay_end__lte = end_time)
+        jobs = Job.objects.all().filter(employee_id = employee_id)
+        for payperiod in payperiod1:
+            for job in jobs:
+                if job.job_id == payperiod.job_id:
+                    " Total Hours, Total Payment \n"      
+                    all_row = employee.employee_name + ", " + job.job_title + ", " + str(payperiod.pay_start.strftime('%b/%d/%Y')) + ", " + str(payperiod.pay_end.strftime('%b/%d/%Y')) + ", "
+                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours +  payperiod.incremental_hours_1 + payperiod.incremental_hours_2 + payperiod.incremental_hours_1_and_2
+                    base_pay =  payperiod.hours * job.base_rate;
+                    all_row += str(payperiod.hours) + ", " + str(job.base_rate) + ", " + str(base_pay) + ", ";
+                    total = base_pay;
+                    overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
+                    all_row += str(payperiod.overtime_hours) + ", " + str(Decimal(job.base_rate) * Decimal(1.5))+ ", " + str(overtime_pay) + ", ";
+                    total = total + overtime_pay
+                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                    all_row += str(payperiod.incremental_hours_1) + ", " + str(job.base_rate + job.incremental_hours_1)+ ", " + str(incremental_pay1)+ ", " 
+                    total = total + incremental_pay1
+                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
+                    all_row += str(payperiod.incremental_hours_2) + ", " + str(job.base_rate + job.incremental_hours_2)+ ", " + str(incremental_pay2)+ ", " 
+                    total = total + incremental_pay2;
+                    incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
+                    all_row += str(payperiod.incremental_hours_1_and_2) + ", " + str(job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)+ ", " + str(incremental_pay12)+ ", " 
+                    total = total + incremental_pay12;
+                    vacation_rate = employee.vacation_pay_rate
+                    if vacation_rate == 0: 
+                        vacation_rate = job.base_rate
+                    vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
+                    all_row += str(payperiod.vacation_hours_spent) + ", " + str(vacation_rate) + ", " + str(vacation_pay) + ", "
+                    total = total + vacation_pay
+                    sick_rate = employee.sick_pay_rate;
+                    if sick_rate == 0: 
+                        sick_rate = job.base_rate
+                    sick_pay =  payperiod.sick_hours_spent * (sick_rate);
+                    all_row += str(payperiod.sick_hours_spent) + ", " + str(sick_rate) + ", " + str(sick_pay) + ", "
+                    total = total + sick_pay
+                    holiday_pay_rate = employee.vacation_pay_rate;
+                    if holiday_pay_rate  == 0: 
+                        holiday_pay_rate  = job.base_rate
+                    holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
+                    all_row += str(payperiod.holiday_hours_spent) + ", " + str(holiday_pay_rate) + ", " + str(holiday_pay) + ", "                    
+                    total = total + holiday_pay
+                    all_row += str(payperiod.sick_hours) + ", " + str(payperiod.vacation_hours) + ", ";
+                    allTotal += total;
+                    all_row += str(total_hours) + ", " + str(total) + "\n";    
+                    tex_file += all_row;   
+    tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n"      
+    return tex_file
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
@@ -27,12 +86,12 @@ def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     jobs = Job.objects.all().filter(employee_id = employee_id)
     employee_info = "To:, " + employee.employee_name + "\nAddress:, " + employee.address + "\n\n"  
     tex_file += employee_info;
-    employer_info = "From: " + employer.employer_name + "\nAddress:, " + employer.address + "\n\n"  
+    employer_info = "From:, " + employer.employer_name + "\nAddress:, " + employer.address + "\n\n"  
     tex_file += employer_info
     for payperiod in payperiod1:
         for job in jobs:
             if job.job_id == payperiod.job_id:
-                payPeriod_info = "Pay Period:, " + str(payperiod.pay_start.strftime('%b %d, %Y')) + ", to, " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " \nJob:, " + job.job_title + " \n"
+                payPeriod_info = "Pay Period:, " + str(payperiod.pay_start.strftime('%b/%d/%Y')) + ", to, " + str(payperiod.pay_end.strftime('%b/%d/%Y')) + " \nJob:, " + job.job_title + " \n"
                 tex_file += payPeriod_info
                 table_start = "Type, Hours, Rate, Payment\n"      
                 tex_file += table_start
@@ -277,43 +336,6 @@ def createAccounts(request):
 
 @csrf_exempt
 def getPayrollCSV(request):
-
-    #Employer.objects.all().delete()
-    #Employee.objects.all().delete()
-    #Job.objects.all().delete()
-    #PayPeriod.objects.all().delete()
-    #employer1 = Employer(employer_id="12468",employer_name="Amazon", address="265 Lytton Ave.", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE1"))
-    #employer2 = Employer(employer_id="13492",employer_name="Microsoft", address="610 Mayfield Ave", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE2"))
-    #employee1 = Employee(employee_id="78932",employer_id="12468", employee_name = "Naveen Krishnamurthi", vacation_hours = 6.00, vacation_pay_rate = 60.00, sick_hours = 12.00, sick_pay_rate = 60.00, vacation_accrual_rate = 0.01, address="12795 Calle De La Siena, San Diego CA, 92130")
-    #employee2 = Employee(employee_id="78777",employer_id="13492", employee_name = "Danial Shakeri", vacation_hours = 8.00, vacation_pay_rate = 62.00, sick_hours = 13.00, sick_pay_rate = 64.00, vacation_accrual_rate = 0.02, address="265 Westfield Ave., San Diego CA, 92130")
-    # employee3 = Employee(employee_id="78412",employer_id="13492", employee_name = "Kevin Miller", vacation_hours = 10.00, vacation_pay_rate = 65.00,  sick_hours = 14.00, sick_pay_rate = 65.00, vacation_accrual_rate = 0.01, address="710 New York St., New York NY, 94099")
-    # job1 = Job(job_id="8933", employee_id="78932", base_rate = 65.00, incremental_hours_1=2.50, incremental_hours_2=0.00, job_title = "Designer")
-    # job2 = Job(job_id="7412", employee_id="78932", base_rate = 70.00, incremental_hours_1=1.00, incremental_hours_2=0.00, job_title = "Engineer I")
-    # job3 = Job(job_id="8935", employee_id="78777", base_rate = 68.00, incremental_hours_1=2.50, incremental_hours_2=2.00, job_title = "Engineer II")
-    # job4 = Job(job_id="8936", employee_id="78412", base_rate = 67.00, incremental_hours_1=2.50, incremental_hours_2=0.00, job_title = "Engineer II")
-    # bp1 = BonusPay(bonus_id="1234", employee_id="78777", amount = 1000.01, pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), date_given=datetime.datetime(2013, 12, 25, 17, 18, 40))
-    # bp2 = BonusPay(bonus_id="1256", employee_id="78412", amount = 1700.99, pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), date_given=datetime.datetime(2013, 12, 25, 17, 18, 40))
-    # employer1.save()
-    # employer2.save()
-    # employee1.save()
-    # employee2.save()
-    # employee3.save()
-    # job1.save()
-    # job2.save()
-    # job3.save()
-    # job4.save()
-    # bp1.save()
-    # bp2.save()
-    # PayPeriod.objects.all().delete()
-    # payPeriod1 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod2 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod3 = PayPeriod(employee_id="78412", job_id="8936", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod4 = PayPeriod(employee_id="78932", job_id="7412", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-
-    # payPeriod1.save()
-    # payPeriod2.save()
-    # payPeriod3.save()
-    # payPeriod4.save()
     json_data = json.loads(request.body)
 
     try:
@@ -391,7 +413,7 @@ def getPayrollCSV(request):
         if employee_id != "*":
             pdf_contents = employeeCSVBuilder( start_time, end_time, employee_id, employer_id);
         else:
-            pdf_contents = employerBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent );
+            pdf_contents = employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent );
 
         return HttpResponse(pdf_contents, content_type='application/pdf')
     tex.close()
