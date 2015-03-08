@@ -188,6 +188,7 @@ def employerBuilder(start_time, end_time, employer_id, columns, show_incremental
     table = "| l | l | l | l | l | l |"
     for i in range(columns):
         table += " l |"
+    allTotal = 0;
     table_start = "\\begin{table}[htb]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
     tex_file +=table_start
     for employee in employees: 
@@ -233,8 +234,10 @@ def employerBuilder(start_time, end_time, employer_id, columns, show_incremental
                             holiday_pay_rate  = job.base_rate
                         holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                         total = total + holiday_pay   
+                    allTotal += total;
                     all_row = all_row + "" + str(total_hours) + " & " + str(total) + "\\\\\n\\hline\n"    
-                    tex_file += all_row;                 
+                    tex_file += all_row;                
+    tex_file += "\\textbf{Total:} & & & & & \\textbf{\\$" + str(allTotal) + "}\\\\\n\\hline\n"
     end_table = "\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
     tex_file += end_table;
     tex_file += "\\end{document}"
@@ -280,7 +283,7 @@ def getPayrollData(request):
     Employee.objects.all().delete()
     Job.objects.all().delete()
     PayPeriod.objects.all().delete()
-    employer1 = Employer(employer_id="12468",employer_name="Amazon", address="265 Lytton Ave.", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key="HASHVALUE1")
+    employer1 = Employer(employer_id="12468",employer_name="Amazon", address="265 Lytton Ave.", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE1"))
     employer2 = Employer(employer_id="13492",employer_name="Microsoft", address="610 Mayfield Ave", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE2"))
     employee1 = Employee(employee_id="78932",employer_id="12468", employee_name = "Naveen Krishnamurthi", vacation_hours = 6.00, vacation_pay_rate = 60.00, sick_hours = 12.00, sick_pay_rate = 60.00, vacation_accrual_rate = 0.01, address="12795 Calle De La Siena, San Diego CA, 92130")
     employee2 = Employee(employee_id="78777",employer_id="13492", employee_name = "Danial Shakeri", vacation_hours = 8.00, vacation_pay_rate = 62.00, sick_hours = 13.00, sick_pay_rate = 64.00, vacation_accrual_rate = 0.02, address="265 Westfield Ave., San Diego CA, 92130")
@@ -304,9 +307,14 @@ def getPayrollData(request):
     bp2.save()
     PayPeriod.objects.all().delete()
     payPeriod1 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-  
-    payPeriod1.save()
+    payPeriod2 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
+    payPeriod3 = PayPeriod(employee_id="78412", job_id="8936", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
+    payPeriod4 = PayPeriod(employee_id="78932", job_id="7412", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
 
+    payPeriod1.save()
+    payPeriod2.save()
+    payPeriod3.save()
+    payPeriod4.save()
     json_data = json.loads(request.body)
 
     try:

@@ -48,6 +48,6 @@ Get TimeCard
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf
 
 
-curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/10/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollData > timecard.pdf
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollData > timecard.pdf
 
 
