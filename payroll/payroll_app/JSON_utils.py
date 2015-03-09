@@ -1,3 +1,5 @@
+import auth_utils
+
 def addCompanyJSON(json_data):
     try:
         employer_id = json_data['employer_id']
@@ -22,7 +24,7 @@ def addEmployeeJSON(json_data):
         employer_key = json_data['employer_key']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
+    if not auth_utils.check_employer(employer_id, employer_key):
         raise Http404("Invalid Employer ID/Key")
     try:
         employee_name = json_data['employee_name']
@@ -64,7 +66,7 @@ def addJobJSON(json_data):
         employer_key = json_data['employer_key']
     except KeyError:
         raise Http404("JobID, EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
+    if not auth_utils.check_employer(employer_id, employer_key) :
         raise Http404("Invalid Employer ID/Key")
     try:
         base_rate = json_data['base_rate']
@@ -90,7 +92,7 @@ def addTimecardDataJSON(json_data):
         timecard_entries = json_data['timecard_data']
     except KeyError:
         raise Http404("Pay period or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
+    if not auth_utils.check_employer(employer_id, employer_key) :
         raise Http404("Invalid Employer ID/Key")
     for json_entry in timecard_entries:
         entry = parseTimecardData(json_entry)
@@ -109,7 +111,7 @@ def addBonusJSON(json_data):
         amount = json_data['bonus_amount']
     except KeyError:
         raise Http404("Bonus, employee, or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
+    if not auth_utils.check_employer(employer_id, employer_key) :
         raise Http404("Invalid Employer ID/Key")
     try:
         pay_start = datetime.datetime.strptime(json_data["pay_start"], "%m/%d/%y")

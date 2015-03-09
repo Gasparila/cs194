@@ -17,6 +17,7 @@ import datetime
 import json
 import reportlab
 import JSON_utils
+import auth_utils
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
@@ -324,7 +325,7 @@ def getPayrollCSV(request):
         end = json_data['end']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
+    if not auth_utils.check_employer(employer_id, employer_key):
         raise Http404("Invalid Employer ID/Key" )
     try:
         employee_id = json_data['employee_id']
@@ -446,7 +447,7 @@ def getPayrollData(request):
         end = json_data['end']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
+    if not auth_utils.check_employer(employer_id, employer_key):
         raise Http404("Invalid Employer ID/Key" )
     try:
         employee_id = json_data['employee_id']
@@ -525,10 +526,6 @@ def getPayrollData(request):
         return HttpResponse(pdf_contents, content_type='application/pdf')
     tex.close()
     return render(request, 'payroll_data.html', {})
-
-def checkEmployer(employer_id, employer_key):
-    employer = Employer.objects.get(employer_id = employer_id)
-    return check_password(employer_key, employer.hash_key)
 
 #TODO: remove this since we should manually add companies
 @csrf_exempt
