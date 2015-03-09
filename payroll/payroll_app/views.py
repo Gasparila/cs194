@@ -436,7 +436,7 @@ def getPayrollData(request):
     # payPeriod2.save()
     # payPeriod3.save()
     # payPeriod4.save()
-    # json_data = json.loads(request.body)
+    json_data = json.loads(request.body)
 
     try:
         employer_id = json_data['employer_id']
