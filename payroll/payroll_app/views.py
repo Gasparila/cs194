@@ -18,6 +18,33 @@ import JSON_utils
 import auth_utils
 import csv_utils
 
+def createEmployee(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_employee.html', {}) 
+def createJob(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_job.html', {}) 
+
+def createBonus(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_bonus.html', {}) 
+
+def createPayPeriod(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_pay_period.html', {}) 
+
+
+def getEmployeeSearchResults(request):
+    employee_id = request.GET['employee_id']
+#    pay_period = request.GET['pay_period']
+    job_title = request.GET['job_title']
+    print employee_id
+
+
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = ""
