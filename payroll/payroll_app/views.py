@@ -906,10 +906,14 @@ def add_daily_timecard_data_csv(csv_file):
             obj['job_id'] = values[0]
         if (values[1] != ""):
             obj['employee_id'] = values[1]
-        for i in range(2, 2 * days_in_period + 2, 2):
+        weekly_hours = 0
+        for i in range(2, len(values), 2):
+            if (i/2) % 7 == 0:
+                weekly_hours = 0
             if (values[i] != "" and values[i + 1] == ""):
-                obj['hours'] += values[i]
-                obj['overtime_hours'] += calculate_overtime(obj)
+                overtime_hours = calculate_overtime(values[i], weekly_hours)
+                obj['hours'] += values[i] - overtime_hours
+                obj['overtime_hours'] += overtime_hours
             if (values[i + 1].lower() == "vacation"):
                 obj['vacation_hours_spent'] += int(values[i + 1])
             if (values[i + 1].lower() == "holiday"):
@@ -920,14 +924,19 @@ def add_daily_timecard_data_csv(csv_file):
                 obj['incremental_hours_1'] += int(values[i + 1])
             if (values[i + 1].lower() == "incremental2"):
                 obj['incremental_hours_2'] += int(values[i + 1])
-            if (values[i + 1].lower() == "incremental incremental2"):
-                obj['incremental_hours_1_and_2'] += int(values[i + 1])
         data_list.append(obj)
     data['timecard_data'] = data_list
     return data
 
-def calculate_overtime(employee):
-    return 0 #TODO: Implement
+def calculate_overtime(daily_hours, weekly_hours):
+    overtime_hours = 0
+    if daily_hours > 8:
+        overtime_hours = daily_hours - 8
+    weekly_hours += daily_hours - overtime_hours
+    if weekly_hours > 40:
+        overtime_hours += weekly_hours - 40
+        weekly_hours = 40
+    return over_time
 
 @csrf_exempt
 def addBonus(request):
