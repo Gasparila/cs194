@@ -16,6 +16,7 @@ import copy
 import datetime
 import json
 import reportlab
+import JSON_utils
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
@@ -535,7 +536,7 @@ def addCompany(request):
     if request.method == 'POST':
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
-            employer_name = addCompanyJSON(json.loads(request.body))
+            employer_name = JSON_utils.addCompanyJSON(json.loads(request.body))
             return HttpResponse("Successfully created entry for %s." % employer_name) 
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -547,12 +548,12 @@ def addEmployee(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            employee_name = addEmployeeJSON(json_data)
+            employee_name = JSON_utils.addEmployeeJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % employee_name) 
         elif content_type == 'text/csv':
             json_data_list = parse_employee_csv(request.body)
             for json_data in json_data_list:
-                addEmployeeJSON(json_data)
+                JSON_utils.addEmployeeJSON(json_data)
             return HttpResponse("Added %d employees." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -598,12 +599,12 @@ def addJob(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            job_title = addJobJSON(json_data)
+            job_title = JSON_utils.addJobJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % job_title) 
         elif content_type == 'text/csv':
             json_data_list = parse_job_csv(request.body)
             for json_data in json_data_list:
-                addJobJSON(json_data)
+                JSON_utils.addJobJSON(json_data)
             return HttpResponse("Added %d jobs." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -702,11 +703,11 @@ def addTimecardData(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         elif content_type == 'text/csv':
             json_data = parse_timecard_csv(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -766,7 +767,7 @@ def addDailyTimecardData(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'text/csv':
             json_data = add_daily_timecard_data_csv(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
@@ -843,12 +844,12 @@ def addBonus(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            employee_id = addBonusJSON(json_data)
+            employee_id = JSON_utils.addBonusJSON(json_data)
             return HttpResponse("Successfully added bonus for employee id %s." % employee_id)
         elif content_type == 'text/csv':
             json_data_list = parse_bonus_csv(request.body)
             for json_data in json_data_list:
-                addBonusJSON(json_data)
+                JSON_utils.addBonusJSON(json_data)
             return HttpResponse("Added %d bonuses." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
