@@ -1,4 +1,7 @@
+from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
+from django.contrib.auth.hashers import make_password
 import auth_utils
+import datetime
 
 def addCompanyJSON(json_data):
     try:
@@ -128,3 +131,60 @@ def addBonusJSON(json_data):
     bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
     bonus.save()
     return employee_id
+
+def parseTimecardData(json_entry):
+    try:
+        job_id = json_entry['job_id']
+        employee_id = json_entry['employee_id']
+        hours = json_entry['hours']
+        employee = Employee.objects.get(employee_id = employee_id)
+    except KeyError:
+        raise Http404("Invalid time card entry")
+    try:
+        overtime_hours = json_entry['overtime_hours']
+    except KeyError:
+        overtime_hours = 0
+    try:
+        incremental_hours_1 = json_entry['incremental_hours_1']
+    except KeyError:
+        incremental_hours_1 = 0
+    try:
+        incremental_hours_2 = json_entry['incremental_hours_2']
+    except KeyError:
+        incremental_hours_2 = 0
+    try:
+        incremental_hours_1_and_2 = json_entry['incremental_hours_1_and_2']
+    except KeyError:
+        incremental_hours_1_and_2 = 0
+    try:
+        holiday_hours = json_entry['holiday_hours']
+        employee.holiday_hours += int(holiday_hours)
+    except KeyError:
+        holiday_hours = 0
+    try:
+        sick_hours = json_entry['sick_hours']
+        employee.sick_hours += int(sick_hours)
+    except KeyError:
+        sick_hours = 0
+    try:
+        vacation_hours = json_entry['vacation_hours']
+        employee.vacation_hours += int(vacation_hours)
+    except KeyError:
+        vacation_hours = 0
+    try:
+        holiday_hours_spent = json_entry['holiday_hours_spent']
+        employee.holiday_hours -= int(holiday_hours_spent)
+    except KeyError:
+        holiday_hours_spent = 0
+    try:
+        sick_hours_spent = json_entry['sick_hours_spent']
+        employee.sick_hours -= int(sick_hours_spent)
+    except KeyError:
+        sick_hours_spent = 0
+    try:
+        vacation_hours_spent = json_entry['vacation_hours_spent']
+        employee.vacation_hours -= int(vacation_hours_spent)
+    except KeyError:
+        vacation_hours_spent = 0
+    employee.save()
+    return PayPeriod(employee_id=employee_id, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
