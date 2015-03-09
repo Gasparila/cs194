@@ -21,6 +21,7 @@ def addCompanyJSON(json_data):
 
 def addEmployeeJSON(json_data):
     try:
+        employer_id = json_data['employer_id']
         employee_id = json_data['employee_id']
         if Employee.objects.filter(employee_id = employee_id).exists():
             raise Http404("Employee %s Already Exists" % employee_id)
