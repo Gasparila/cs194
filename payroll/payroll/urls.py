@@ -24,5 +24,7 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^createJob$', 'createJob'),
     url(r'^createBonus$', 'createBonus'),
     url(r'^createPayPeriod$', 'createPayPeriod'),
+    
+    url(r'^createEmployeeSubmit$', 'createEmployeeSubmit'),
 
 )

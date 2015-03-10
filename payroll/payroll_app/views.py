@@ -17,6 +17,21 @@ import reportlab
 import JSON_utils
 import auth_utils
 import csv_utils
+import web_utils
+
+def createEmployeeSubmit(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET['employee_name']
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_employee.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_employee.html', {'error': True,}) 
 
 def createEmployee(request):
     if not request.user.is_authenticated(): return redirect('login/')   
