@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib import auth, messages
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
 from django.contrib.messages import get_messages
 from django.http import Http404
 from django.http import HttpResponse
@@ -16,6 +14,11 @@ import copy
 import datetime
 import json
 import reportlab
+import JSON_utils
+import auth_utils
+import csv_utils
+import web_utils
+
 def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent):
     employer = Employer.objects.get(employer_id = employer_id)
     employees = Employee.objects.all().filter(employer_id = employer_id)
@@ -75,6 +78,48 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
                     tex_file += all_row;   
     tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n"      
     return tex_file
+
+
+def createEmployeeSubmit(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET['employee_name']
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_employee.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_employee.html', {'error': True,}) 
+
+def createEmployee(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_employee.html', {}) 
+def createJob(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_job.html', {}) 
+
+def createBonus(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_bonus.html', {}) 
+
+def createPayPeriod(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        return render(request, 'create_pay_period.html', {}) 
+
+
+def getEmployeeSearchResults(request):
+    #employee_id = request.GET['employee_id']
+    #pay_period = request.GET['pay_period']
+    #job_title = request.GET['job_title']
+    return render(request, 'employee_search_results.html', {}) 
+
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
@@ -345,7 +390,7 @@ def getPayrollCSV(request):
         end = json_data['end']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
+    if not auth_utils.check_employer(employer_id, employer_key):
         raise Http404("Invalid Employer ID/Key" )
     try:
         employee_id = json_data['employee_id']
@@ -458,7 +503,7 @@ def getPayrollData(request):
     # payPeriod2.save()
     # payPeriod3.save()
     # payPeriod4.save()
-    # json_data = json.loads(request.body)
+    json_data = json.loads(request.body)
 
     try:
         employer_id = json_data['employer_id']
@@ -467,7 +512,7 @@ def getPayrollData(request):
         end = json_data['end']
     except KeyError:
         raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
+    if not auth_utils.check_employer(employer_id, employer_key):
         raise Http404("Invalid Employer ID/Key" )
     try:
         employee_id = json_data['employee_id']
@@ -547,36 +592,17 @@ def getPayrollData(request):
     tex.close()
     return render(request, 'payroll_data.html', {})
 
-def checkEmployer(employer_id, employer_key):
-    employer = Employer.objects.get(employer_id = employer_id)
-    return check_password(employer_key, employer.hash_key)
-
 #TODO: remove this since we should manually add companies
 @csrf_exempt
 def addCompany(request):
     if request.method == 'POST':
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
-            employer_name = addCompanyJSON(json.loads(request.body))
+            employer_name = JSON_utils.addCompanyJSON(json.loads(request.body))
             return HttpResponse("Successfully created entry for %s." % employer_name) 
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
-def addCompanyJSON(json_data):
-    try:
-        employer_id = json_data['employer_id']
-        if Employer.objects.filter(employer_id = employer_id).exists():
-            raise Http404("Company Already Exists")
-        employer_name = json_data['employer_name']
-        employer_address = json_data['address']
-        employer_key = json_data['key']
-        employer_key = make_password(employer_key)
-    except KeyError:
-        raise Http404("Employer info not found")
-    curDate = datetime.datetime.now()
-    employer = Employer(employer_id=employer_id, employer_name=employer_name, address=employer_address, hash_key=employer_key, pay_start=curDate, pay_end=curDate)
-    employer.save()
-    return employer_name
 
 @csrf_exempt
 def addEmployee(request):
@@ -584,90 +610,15 @@ def addEmployee(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            employee_name = addEmployeeJSON(json_data)
+            employee_name = JSON_utils.addEmployeeJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % employee_name) 
         elif content_type == 'text/csv':
-            json_data_list = parse_employee_csv(request.body)
+            json_data_list = csv_utils.parse_employee_csv(request.body)
             for json_data in json_data_list:
-                addEmployeeJSON(json_data)
+                JSON_utils.addEmployeeJSON(json_data)
             return HttpResponse("Added %d employees." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
-
-def parse_employee_csv(csv_file):
-    data_list = []
-    metadata = {}
-    lines = csv_file.splitlines()
-    first = True
-    for line in lines:
-        obj = {}
-        values = line.split(',')
-        if first:
-            first = False
-            if (values[0] != ""):
-                metadata['employer_id'] = values[0]
-            if (values[1] != ""):
-                metadata['employer_key'] = values[1]
-            continue
-        obj = copy.deepcopy(metadata)
-        if (values[0] != ""):
-            obj['employee_id'] = values[0]
-        if (values[1] != ""):
-            obj['employee_name'] = values[1]
-        if (values[2] != ""):
-            obj['employee_address'] = values[2]
-        if (values[3] != ""):
-            obj['vacation_hours'] = values[3]
-        if (values[4] != ""):
-            obj['sick_hours'] = values[4]
-        if (values[5] != ""):
-            obj['vacation_pay_rate'] = values[5]
-        if (values[6] != ""):
-            obj['sick_pay_rate'] = values[6]
-        if (values[7] != ""):
-            obj['vacation_accrual_rate'] = values[7]
-        data_list.append(obj)
-    return data_list
-
-
-def addEmployeeJSON(json_data):
-    try:
-        employee_id = json_data['employee_id']
-        if Employee.objects.filter(employee_id = employee_id).exists():
-            raise Http404("Employee %s Already Exists" % employee_id)
-        employer_key = json_data['employer_key']
-    except KeyError:
-        raise Http404("EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key):
-        raise Http404("Invalid Employer ID/Key")
-    try:
-        employee_name = json_data['employee_name']
-        employee_address = json_data['employee_address']
-    except KeyError:
-        raise Http404("Employee info not found")
-    try:
-        vacation_hours = json_data['vacation_hours']
-    except KeyError:
-        vacation_hours = 0 
-    try:
-        sick_hours = json_data['sick_hours']
-    except KeyError:
-        sick_hours = 0
-    try:
-        vacation_pay_rate = json_data['vacation_pay_rate']
-    except KeyError:
-        vacation_pay_rate = 0  
-    try:
-        sick_pay_rate = json_data['sick_pay_rate']
-    except KeyError:
-        sick_pay_rate = 0
-    try:
-        vacation_accrual_rate = json_data['vacation_accrual_rate']
-    except KeyError:
-        vacation_accrual_rate = 0    
-    employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=employee_address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
-    employee.save()
-    return employee_name
 
 @csrf_exempt
 def addJob(request):
@@ -675,132 +626,15 @@ def addJob(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            job_title = addJobJSON(json_data)
+            job_title = JSON_utils.addJobJSON(json_data)
             return HttpResponse("Successfully created entry for %s." % job_title) 
         elif content_type == 'text/csv':
-            json_data_list = parse_job_csv(request.body)
+            json_data_list = csv_utils.parse_job_csv(request.body)
             for json_data in json_data_list:
-                addJobJSON(json_data)
+                JSON_utils.addJobJSON(json_data)
             return HttpResponse("Added %d jobs." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
-
-def parse_job_csv(csv_file):
-    data_list = []
-    lines = csv_file.splitlines()
-    first = True
-    metadata = {}
-    for line in lines:
-        obj = {}
-        values = line.split(',')
-        if first:
-            first = False
-            if (values[0] != ""):
-                metadata['employer_id'] = values[0]
-            if (values[1] != ""):
-                metadata['employer_key'] = values[1]
-            continue
-        obj = copy.deepcopy(metadata)
-        if (values[0] != ""):
-            obj['job_id'] = values[0]
-        if (values[1] != ""):
-            obj['job_title'] = values[1]
-        if (values[2] != ""):
-            obj['employee_id'] = values[2]
-        if (values[3] != ""):
-            obj['base_rate'] = values[3]
-        if (values[4] != ""):
-            obj['incremental_rate_1'] = values[4]
-        if (values[5] != ""):
-            obj['incremental_rate_2'] = values[5]
-        data_list.append(obj)
-    return data_list
-
-def addJobJSON(json_data):
-    try:
-        job_id = json_data['job_id']
-        if Job.objects.filter(job_id = job_id).exists():
-            raise Http404("Job %s Already Exists" % employee_id)
-        job_title = json_data['job_title']
-        employee_id = json_data['employee_id']
-        employer_id = json_data['employer_id']
-        employer_key = json_data['employer_key']
-    except KeyError:
-        raise Http404("JobID, EmployeeID, or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
-        raise Http404("Invalid Employer ID/Key")
-    try:
-        base_rate = json_data['base_rate']
-    except KeyError:
-        base_rate = 0
-    try:
-        incremental_rate_1 = json_data['incremental_rate_1']
-    except KeyError:
-        incremental_rate_1 = 0
-    try:
-        incremental_rate_2 = json_data['incremental_rate_2']
-    except KeyError:
-        incremental_rate_2 = 0
-    job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_rate_1, incremental_hours_2=incremental_rate_2, job_title = job_title)
-    job.save()
-    return job_title
-
-def parseTimecardData(json_entry):
-    try:
-        job_id = json_entry['job_id']
-        employee_id = json_entry['employee_id']
-        hours = json_entry['hours']
-        employee = Employee.objects.get(employee_id = employee_id)
-    except KeyError:
-        raise Http404("Invalid time card entry")
-    try:
-        overtime_hours = json_entry['overtime_hours']
-    except KeyError:
-        overtime_hours = 0
-    try:
-        incremental_hours_1 = json_entry['incremental_hours_1']
-    except KeyError:
-        incremental_hours_1 = 0
-    try:
-        incremental_hours_2 = json_entry['incremental_hours_2']
-    except KeyError:
-        incremental_hours_2 = 0
-    try:
-        incremental_hours_1_and_2 = json_entry['incremental_hours_1_and_2']
-    except KeyError:
-        incremental_hours_1_and_2 = 0
-    try:
-        holiday_hours = json_entry['holiday_hours']
-        employee.holiday_hours += int(holiday_hours)
-    except KeyError:
-        holiday_hours = 0
-    try:
-        sick_hours = json_entry['sick_hours']
-        employee.sick_hours += int(sick_hours)
-    except KeyError:
-        sick_hours = 0
-    try:
-        vacation_hours = json_entry['vacation_hours']
-        employee.vacation_hours += int(vacation_hours)
-    except KeyError:
-        vacation_hours = 0
-    try:
-        holiday_hours_spent = json_entry['holiday_hours_spent']
-        employee.holiday_hours -= int(holiday_hours_spent)
-    except KeyError:
-        holiday_hours_spent = 0
-    try:
-        sick_hours_spent = json_entry['sick_hours_spent']
-        employee.sick_hours -= int(sick_hours_spent)
-    except KeyError:
-        sick_hours_spent = 0
-    try:
-        vacation_hours_spent = json_entry['vacation_hours_spent']
-        employee.vacation_hours -= int(vacation_hours_spent)
-    except KeyError:
-        vacation_hours_spent = 0
-    employee.save()
-    return PayPeriod(employee_id=employee_id, job_id=job_id, hours = hours, overtime_hours = overtime_hours, incremental_hours_1 = incremental_hours_1, incremental_hours_2 = incremental_hours_2, incremental_hours_1_and_2 = incremental_hours_1_and_2, holiday_hours = holiday_hours, sick_hours = sick_hours, vacation_hours = vacation_hours, holiday_hours_spent = holiday_hours_spent, sick_hours_spent = sick_hours_spent, vacation_hours_spent = vacation_hours_spent)
 
 @csrf_exempt
 def addTimecardData(request):
@@ -808,148 +642,25 @@ def addTimecardData(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         elif content_type == 'text/csv':
-            json_data = parse_timecard_csv(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            json_data = csv_utils.parse_timecard_csv(request.body)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
-
-def parse_timecard_csv(csv_file):
-    data = {}
-    data_list = []
-    lines = csv_file.splitlines()
-    first = True
-    for line in lines:
-        obj = {}
-        values = line.split(',')
-        if first:
-            first = False
-            if (values[0] != "" and values[1] != ""):
-                pay_period_start = values[0] 
-                pay_period_end = values[1]
-                data["pay_period"] = {"start":pay_period_start, "end":pay_period_end}
-            if (values[2] != ""):
-                data["employer_id"] = values[2]
-            if (values[3] != ""):
-                data["employer_key"] = values[3]
-            continue
-        if (values[0] != ""):
-            obj['job_id'] = values[0]
-        if (values[1] != ""):
-            obj['employee_id'] = values[1]
-        if (values[2] != ""):
-            obj['hours'] = values[2]
-        if (values[3] != ""):
-            obj['overtime_hours'] = values[3]
-        if (values[4] != ""):
-            obj['holiday_hours_spent'] = values[4]
-        if (values[5] != ""):
-            obj['sick_hours_spent'] = values[5]
-        if (values[6] != ""):
-            obj['vacation_hours_spent'] = values[6]
-        if (values[7] != ""):
-            obj['incremental_hours_1'] = values[7]
-        if (values[8] != ""):
-            obj['incremental_hours_2'] = values[8]
-        if (values[9] != ""):
-            obj['incremental_hours_1_and_2'] = values[9]
-        if (values[10] != ""):
-            obj['holiday_hours'] = values[10]
-        if (values[11] != ""):
-            obj['sick_hours'] = values[11]
-        if (values[12] != ""):
-            obj['vacation_hours'] = values[12]
-        data_list.append(obj)
-    data['timecard_data'] = data_list
-    return data
-
-def addTimecardDataJSON(json_data):
-    try:
-        pay_period = json_data['pay_period']
-        employer_id = json_data['employer_id']
-        employer_key = json_data['employer_key']
-        timecard_entries = json_data['timecard_data']
-    except KeyError:
-        raise Http404("Pay period or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
-        raise Http404("Invalid Employer ID/Key")
-    for json_entry in timecard_entries:
-        entry = parseTimecardData(json_entry)
-        entry.pay_start = datetime.datetime.strptime(pay_period["start"], "%m/%d/%y")
-        entry.pay_end = datetime.datetime.strptime(pay_period["end"], "%m/%d/%y")
-        entry.save();
-    return len(timecard_entries)
 
 @csrf_exempt
 def addDailyTimecardData(request):
     if request.method == 'POST':
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'text/csv':
-            json_data = add_daily_timecard_data_csv(request.body)
-            num_cards = addTimecardDataJSON(json_data)
+            json_data = csv_utils.add_daily_timecard_data_csv(request.body)
+            num_cards = JSON_utils.addTimecardDataJSON(json_data)
             return HttpResponse("Successfully added %d timecards." % num_cards)
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
-
-def add_daily_timecard_data_csv(csv_file):
-    data = {}
-    data_list = []
-    lines = csv_file.splitlines()
-    first = True
-    days_in_period = 0
-    for line in lines:
-        obj = {}
-        values = line.split(',')
-        if first:
-            first = False
-            if (values[0] != "" and values[1] != ""):
-                pay_period_start = values[0] 
-                pay_period_end = values[1]
-                data["pay_period"] = {"start":pay_period_start, "end":pay_period_end}
-            if (values[2] != ""):
-                data["employer_id"] = values[2]
-            if (values[3] != ""):
-                data["employer_key"] = values[3]
-            if (values[4] != ""):
-                days_in_period = int(values[4])
-            continue
-        obj['hours'] = 0
-        obj['overtime_hours'] = 0
-        obj['holiday_hours_spent'] = 0
-        obj['sick_hours_spent'] = 0
-        obj['vacation_hours_spent'] = 0
-        obj['incremental_hours_1'] = 0
-        obj['incremental_hours_2'] = 0
-        obj['incremental_hours_1_and_2'] = 0
-        if (values[0] != ""):
-            obj['job_id'] = values[0]
-        if (values[1] != ""):
-            obj['employee_id'] = values[1]
-        for i in range(2, 2 * days_in_period + 2, 2):
-            if (values[i] != "" and values[i + 1] == ""):
-                obj['hours'] += values[i]
-                obj['overtime_hours'] += calculate_overtime(obj)
-            if (values[i + 1].lower() == "vacation"):
-                obj['vacation_hours_spent'] += int(values[i + 1])
-            if (values[i + 1].lower() == "holiday"):
-                obj['holiday_hours_spent'] += int(values[i + 1])
-            if (values[i + 1].lower() == "sick"):
-                obj['sick_hours_spent'] += int(values[i + 1])
-            if (values[i + 1].lower() == "incremental"):
-                obj['incremental_hours_1'] += int(values[i + 1])
-            if (values[i + 1].lower() == "incremental2"):
-                obj['incremental_hours_2'] += int(values[i + 1])
-            if (values[i + 1].lower() == "incremental incremental2"):
-                obj['incremental_hours_1_and_2'] += int(values[i + 1])
-        data_list.append(obj)
-    data['timecard_data'] = data_list
-    return data
-
-def calculate_overtime(employee):
-    return 0 #TODO: Implement
 
 @csrf_exempt
 def addBonus(request):
@@ -957,71 +668,12 @@ def addBonus(request):
         content_type = request.META['CONTENT_TYPE']
         if content_type == 'application/json':
             json_data = json.loads(request.body)
-            employee_id = addBonusJSON(json_data)
+            employee_id = JSON_utils.addBonusJSON(json_data)
             return HttpResponse("Successfully added bonus for employee id %s." % employee_id)
         elif content_type == 'text/csv':
-            json_data_list = parse_bonus_csv(request.body)
+            json_data_list = csv_utils.parse_bonus_csv(request.body)
             for json_data in json_data_list:
-                addBonusJSON(json_data)
+                JSON_utils.addBonusJSON(json_data)
             return HttpResponse("Added %d bonuses." % len(json_data_list))
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
-
-def parse_bonus_csv(csv_file):
-    metadata = {}
-    data_list = []
-    lines = csv_file.splitlines()
-    first = True
-    for line in lines:
-        obj = {}
-        values = line.split(',')
-        if first:
-            first = False
-            if (values[0] != ""):
-                metadata['employer_id'] = values[0]
-            if (values[1] != ""):
-                metadata['employer_key'] = values[1]
-            if (values[2] != ""):
-                metadata["pay_start"] = values[2]
-            if (values[3] != ""):
-                metadata["pay_end"] = values[3]
-            if (values[4] != ""):
-                metadata["data_given"] = values[4]
-            continue
-        obj = copy.deepcopy(metadata)
-        if (values[0] != ""):
-            obj['bonus_id'] = values[0]
-        if (values[1] != ""):
-            obj['employee_id'] = values[1]
-        if (values[2] != ""):
-            obj['bonus_amount'] = values[2]
-        data_list.append(obj)
-    return data_list
-
-def addBonusJSON(json_data):
-    cur_time = datetime.datetime.now()
-    try:
-        bonus_id = json_data['bonus_id']
-        employer_id = json_data['employer_id']
-        employer_key = json_data['employer_key']
-        employee_id = json_data['employee_id']
-        amount = json_data['bonus_amount']
-    except KeyError:
-        raise Http404("Bonus, employee, or employer info not found")
-    if not checkEmployer(employer_id, employer_key) :
-        raise Http404("Invalid Employer ID/Key")
-    try:
-        pay_start = datetime.datetime.strptime(json_data["pay_start"], "%m/%d/%y")
-    except KeyError:
-        pay_start = cur_time
-    try:
-        pay_end = datetime.datetime.strptime(json_data["pay_end"], "%m/%d/%y")
-    except KeyError:
-        pay_end = cur_time
-    try:
-        date_given = datetime.datetime.strptime(json_data["data_given"], "%m/%d/%y")
-    except KeyError:
-        date_given = cur_time
-    bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
-    bonus.save()
-    return employee_id
