@@ -25,7 +25,7 @@ SECRET_KEY = 'g0ek%2r6#_x%hf4d(1ofwyob2^d3v)%90)3-ma5no4p%ih4_03'
 DEBUG = True
 
 TEMPLATE_DEBUG = True
-ALLOWED_HOSTS = ['cs194easypayroll.herokuapp.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -90,7 +90,7 @@ AUTH_USER_MODEL = 'payroll_app.AuthUser'
 STATIC_URL = '/static/'
 STATIC_ROOT = 'staticfiles'
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, '../dashboard_app/static'),
+    os.path.join(BASE_DIR, '../payroll_app/static'),
 )
 
 TEMPLATE_DIRS = (
