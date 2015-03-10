@@ -1,1 +1,1 @@
-web: gunicorn dashboard.wsgi --log-file -
+web: gunicorn payroll.wsgi --log-file -
