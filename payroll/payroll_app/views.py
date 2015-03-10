@@ -19,6 +19,7 @@ import auth_utils
 import csv_utils
 import web_utils
 
+
 def createEmployeeSubmit(request):
     if not request.user.is_authenticated(): return redirect('login/')   
     else:
@@ -54,10 +55,11 @@ def createPayPeriod(request):
 
 
 def getEmployeeSearchResults(request):
-    employee_id = request.GET['employee_id']
-#    pay_period = request.GET['pay_period']
-    job_title = request.GET['job_title']
-    print employee_id
+    #employee_id = request.GET['employee_id']
+    #pay_period = request.GET['pay_period']
+    #job_title = request.GET['job_title']
+    return render(request, 'employee_search_results.html', {}) 
+
 
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
