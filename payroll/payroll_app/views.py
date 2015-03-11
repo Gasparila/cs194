@@ -79,7 +79,6 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
     tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n"      
     return tex_file
 
-
 def createEmployeeSubmit(request):
     if not request.user.is_authenticated(): return redirect('login/')   
     else:
@@ -93,6 +92,34 @@ def createEmployeeSubmit(request):
         else:
             messages.add_message(request, messages.INFO, error)
             return render(request, 'create_employee.html', {'error': True,}) 
+
+def createJobSubmit(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET.get('job_title')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_job.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_job.html', {'error': True,})
+
+def createBonusSubmit(request):
+    if not request.user.is_authenticated(): return redirect('login/')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        if error is None:
+            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_bonus.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_bonus.html', {'error': True,})
 
 def createEmployee(request):
     if not request.user.is_authenticated(): return redirect('login/')   
