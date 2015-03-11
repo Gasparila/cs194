@@ -14,6 +14,9 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^addBonus$', 'addBonus'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', 'login'),
+    url(r'^register/', 'register'),
+    
+
     url(r'^logout/', 'logout'),
     url(r'^createAccounts/', 'createAccounts'),
     url(r'^employeeSearch/$', 'employeeSearch'),

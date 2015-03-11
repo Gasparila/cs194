@@ -397,6 +397,10 @@ def login(request):
     storage = get_messages(request)
     return render(request, 'login.html', {})
 
+def register(request):
+    storage = get_messages(request)
+    return render(request, 'register.html', {})
+
 def logout(request):
     auth.logout(request)
     return redirect('/')            
