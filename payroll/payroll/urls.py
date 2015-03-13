@@ -15,6 +15,8 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/', 'login'),
     url(r'^register/', 'register'),
+    url(r'^registerSubmit/', 'registerSubmit'),
+
     
 
     url(r'^logout/', 'logout'),

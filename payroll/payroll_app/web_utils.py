@@ -72,3 +72,19 @@ def addBonus(employer_id, employer_key, bonus_id, employee_id, amount, pay_start
     bonus.save()
     return None
 
+def addEmployer(employer_id, employer_name, address, hash_key):
+    #consider deleting the following
+    cur_time = datetime.datetime.now()
+    pay_start = cur_time
+    pay_end = cur_time
+    #end of portion to delete 
+    if employer_id is None: return "Employer ID is required"
+    if employer_name is None: return "Employer name is required"
+    if address is None: return "Address is required"
+    if hash_key is None: return "Hash key is required"
+    if Employer.objects.filter(employer_id = employer_id).exists():
+        return "Account with email %s already exists" % employer_id
+    employer = Employer(employer_id=employer_id, employer_name=employer_name, address=address, pay_start=pay_start, pay_end=pay_end, hash_key=hash_key)
+    employer.save()
+    return None
+
