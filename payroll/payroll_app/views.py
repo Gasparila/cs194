@@ -384,6 +384,7 @@ def index(request):
     if user is not None:
         if user.is_active:
             auth.login(request, user)
+            request.session['email']=email
             return render(request, 'index.html', {})
         else:
             messages.add_message(request, messages.INFO, 'Inactive user account')
@@ -411,6 +412,7 @@ def registerSubmit(request):
     if error is None:
         user = auth.authenticate(username=email, password=password)
         auth.login(request, user)
+        request.session['email']=email
         return redirect('/')
     else:
         messages.add_message(request, messages.INFO, error)
