@@ -70,9 +70,8 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
     tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n"      
     return tex_file
 
-
 def createEmployeeSubmit(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         employer_id = "8675-309"
         employer_key = "private_key"
@@ -85,22 +84,50 @@ def createEmployeeSubmit(request):
             messages.add_message(request, messages.INFO, error)
             return render(request, 'create_employee.html', {'error': True,}) 
 
+def createJobSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET.get('job_title')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_job.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_job.html', {'error': True,})
+
+def createBonusSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        if error is None:
+            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_bonus.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_bonus.html', {'error': True,})
+
 def createEmployee(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         return render(request, 'create_employee.html', {}) 
 def createJob(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         return render(request, 'create_job.html', {}) 
 
 def createBonus(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         return render(request, 'create_bonus.html', {}) 
 
 def createPayPeriod(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         return render(request, 'create_pay_period.html', {}) 
 
@@ -285,7 +312,7 @@ def employeeBuilder( start_time, end_time, employee_id, employer_id):
     return tex_file
 
 def employeeSearch(request):
-    if not request.user.is_authenticated(): return redirect('login/')   
+    if not request.user.is_authenticated(): return redirect('/login')   
     else:
         return render(request, 'employee_search.html', {})  
 
@@ -354,18 +381,39 @@ def index(request):
     if user is not None:
         if user.is_active:
             auth.login(request, user)
+            request.session['email']=email
             return render(request, 'index.html', {})
         else:
             messages.add_message(request, messages.INFO, 'Inactive user account')
-            return redirect('login/')           
+            return redirect('/login')           
     else:
         if email is not None and password is not None: 
             messages.add_message(request, messages.INFO, 'Invalid login information')
-        return redirect('login/')   
+        return redirect('/login')   
 
 def login(request):
     storage = get_messages(request)
     return render(request, 'login.html', {})
+
+def register(request):
+    storage = get_messages(request)
+    return render(request, 'register.html', {})
+
+def registerSubmit(request):
+    company_name = request.GET.get('company_name')
+    company_address = request.GET.get('company_address')
+    email = request.GET.get('email')
+    password = request.GET.get('password')
+    confirm_password = request.GET.get('confirm_password')
+    error = auth_utils.create_account(email=email, password=password, confirm_password=confirm_password, name=company_name, address=company_address)
+    if error is None:
+        user = auth.authenticate(username=email, password=password)
+        auth.login(request, user)
+        request.session['email']=email
+        return redirect('/')
+    else:
+        messages.add_message(request, messages.INFO, error)
+        return redirect('/register')
 
 def logout(request):
     auth.logout(request)
@@ -374,7 +422,7 @@ def logout(request):
 def createAccounts(request):
     user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
     user.save()
-    return redirect('login/')    
+    return redirect('/login')    
 
 @csrf_exempt
 def getPayrollCSV(request):
