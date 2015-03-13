@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+
+{% load staticfiles %}
+{% load mathfilters %}
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EasyPayroll</title>
+
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+
+    <!-- Morris -->
+    <link href="{% static 'css/plugins/morris/morris-0.4.3.min.css' %}" rel="stylesheet">
+
+    <!-- Gritter -->
+    <link href="{% static 'js/plugins/gritter/jquery.gritter.css' %}" rel="stylesheet">
+
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/dataTables/dataTables.bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/dataTables/dataTables.responsive.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/dataTables/dataTables.tableTools.min.css' %}" rel="stylesheet">
+
+
+</head>
+
+<body>
+    <div id="wrapper">
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="nav-header">
+                        <div class="dropdown profile-element"> <span>
+                            <img alt="image" class="img-circle" src="{% static 'img/walli.jpg'%}" />
+                             </span>
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">Naveen Krishnamurthi</strong>
+                             </span> <span class="text-muted text-xs block">CEO <b class="caret"></b></span> </span> </a>
+                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                                <li><a href="/">Profile</a></li>
+                                <li><a href="/">Contacts</a></li>
+                                <li><a href="/">Mailbox</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                            </ul>
+                        </div>
+                        <div class="logo-element">
+                            Microsoft
+                        </div>
+                    </li>
+                    <li>
+                        <a href="/"><i class="fa fa-th-large"></i> <span class="nav-label">Home</span></a
+                        </li>
+                    <li>
+                        <a href="#"><i class="fa fa-line-chart"></i> <span class="nav-label">Revenues</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li><a href="/">Stanford</a></li>
+                            <li><a href="/">Los Angeles</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/"><i class="fa fa-bar-chart-o"></i> <span class="nav-label">Costs </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li><a href="/">Stanford</a></li>
+                            <li><a href="/">Los Angeles</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/"><i class="fa fa-plus"></i> <span class="nav-label">Add Data </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li><a href="/createEmployee">Employee</a></li>
+                            <li><a href="/createJob">Job</a></li>
+                            <li><a href="/createBonus">Bonus</a></li>
+                            <li><a href="/createPayPeriod">Pay Period</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="active">
+                        <a href="/employeeSearch"><i class="fa fa-search"></i> <span class="nav-label">Employees</span></a
+                        </li>
+                    <li>
+
+                </ul>
+
+            </div>
+        </nav>
+        <div id="page-wrapper" class="gray-bg">
+        <div class="row border-bottom">
+        <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+            <form role="search" class="navbar-form-custom" method="post" action="search_results.html">
+                <div class="form-group">
+                    <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">
+                </div>
+            </form>
+        </div>
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+                        <i class="fa fa-envelope"></i>  <span class="label label-warning">16</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-messages">
+                        <li>
+                            <div class="dropdown-messages-box">
+                                <a href="profile.html" class="pull-left">
+                                    <img alt="image" class="img-circle" src="img/a7.jpg">
+                                </a>
+                                <div class="media-body">
+                                    <small class="pull-right">46h ago</small>
+                                    <strong>Mike Loreipsum</strong> started following <strong>Monica Smith</strong>. <br>
+                                    <small class="text-muted">3 days ago at 7:58 pm - 10.06.2014</small>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <div class="dropdown-messages-box">
+                                <a href="profile.html" class="pull-left">
+                                    <img alt="image" class="img-circle" src="img/a4.jpg">
+                                </a>
+                                <div class="media-body ">
+                                    <small class="pull-right text-navy">5h ago</small>
+                                    <strong>Chris Johnatan Overtunk</strong> started following <strong>Monica Smith</strong>. <br>
+                                    <small class="text-muted">Yesterday 1:21 pm - 11.06.2014</small>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <div class="dropdown-messages-box">
+                                <a href="profile.html" class="pull-left">
+                                    <img alt="image" class="img-circle" src="img/profile.jpg">
+                                </a>
+                                <div class="media-body ">
+                                    <small class="pull-right">23h ago</small>
+                                    <strong>Monica Smith</strong> love <strong>Kim Smith</strong>. <br>
+                                    <small class="text-muted">2 days ago at 2:30 am - 11.06.2014</small>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <div class="text-center link-block">
+                                <a href="mailbox.html">
+                                    <i class="fa fa-envelope"></i> <strong>Read All Messages</strong>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+                        <i class="fa fa-bell"></i>  <span class="label label-primary">8</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-alerts">
+                        <li>
+                            <a href="mailbox.html">
+                                <div>
+                                    <i class="fa fa-envelope fa-fw"></i> You have 16 messages
+                                    <span class="pull-right text-muted small">4 minutes ago</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="profile.html">
+                                <div>
+                                    <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                                    <span class="pull-right text-muted small">12 minutes ago</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="grid_options.html">
+                                <div>
+                                    <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                                    <span class="pull-right text-muted small">4 minutes ago</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <div class="text-center link-block">
+                                <a href="notifications.html">
+                                    <strong>See All Alerts</strong>
+                                    <i class="fa fa-angle-right"></i>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+
+
+                <li>
+                    <a href="/logout">
+                        <i class="fa fa-sign-out"></i> Log out
+                    </a>
+                </li>
+            </ul>
+
+        </nav>
+        </div>
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-lg-10">
+                    <h2>Employees</h2>
+                </div>
+                <div class="col-lg-2">
+
+                </div>
+            </div>
+        <div class="wrapper wrapper-content animated fadeInRight">
+            <div class="row">
+                <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        {% if employees %}
+                        {% for employee in employees %}
+
+                        <h5>{{ employee.employee_id }}: {{ employee.employee_name }}</h5>
+                        {% endfor %}
+                        {% endif %}
+
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <i class="fa fa-wrench"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user">
+                                <li><a href="#">Config option 1</a>
+                                </li>
+                                <li><a href="#">Config option 2</a>
+                                </li>
+                            </ul>
+                            <a class="close-link">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                      {% if employees %}
+                        {% if payperiods %}
+                        {% if jobs %}
+                        {% for employee in employees %}
+                        {% for payperiod in payperiods %}
+                        {% ifequal employee.employee_id payperiod.employee_id%}                      
+                        {% for job in jobs %}
+                        {% ifequal job.job_id payperiod.job_id%}
+                    <h5> Job: {{ job.job_title }} </h5>                    
+                    <h5> Pay Period: {{ payperiod.pay_start.date }} - {{ payperiod.pay_end.date }}</h5>
+                    <table class="table table-striped table-bordered table-hover " >
+                    <thead>
+                    <tr>
+                        <th> Type</th>
+                        <th> Hours</th>
+                        <th> Rate </th>
+                        <th> Payment</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="gradeX">
+                        <td>Base Pay</td>
+                        <td>{{ payperiod.hours }}</td>
+                        <td>{{ job.base_rate }}</td>
+                        <td> ${{ job.base_rate|mul:payperiod.hours }}</td>
+                    </tr>
+                    {% if payperiod.overtime_hours > 0 %}
+                    <tr class="gradeX">
+                        <td> Overtime Pay</td>
+                        <td> {{payperiod.overtime_hours}} </td>
+                        <td> {{job.base_rate|mul:1.5}} </td>
+                        <td> ${{job.base_rate|mul:1.5|mul:payperiod.overtime_hours}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if payperiod.incremental_hours_1 > 0 %}
+                     <tr class="gradeX">
+                        <td> First Incremental Pay</td>
+                        <td> {{payperiod.incremental_hours_1}} </td>
+                        <td>{{ job.incremental_hours_1 }}</td>
+                        <td> ${{ job.incremental_hours_1|mul:payperiod.incremental_hours_1  }}</td>
+                    </tr>
+                                        {% endif %}
+                    {% if payperiod.incremental_hours_2 > 0 %}    
+                    <tr class="gradeX">
+                        <td> Second Incremental Pay</td>
+                        <td> {{payperiod.incremental_hours_2}} </td>
+                        <td>{{ job.incremental_hours_2 }}</td>
+                        <td> ${{ job.incremental_hours_2|mul:payperiod.incremental_hours_2 }}</td>
+                    </tr>  
+                    {% endif %}
+                    {% if payperiod.vacation_hours_spent > 0 %}
+                    <tr class="gradeX">    
+                        <td> Vacation Hours Spent</td>
+                        <td> {{payperiod.vacation_hours_spent}} </td>
+                        <td>{{ job.base_rate }}</td>
+                        <td> ${{ payperiod.vacation_hours_spent|mul:job.base_rate  }}</td>
+                    </tr>  
+                                        {% endif %}
+                    {% if payperiod.sick_hours_spent > 0 %}
+                    <tr class="gradeX">
+                        <td> Sick Hours Spent</td>
+                        <td> {{payperiod.sick_hours_spent}} </td>
+                        <td>{{ job.base_rate }}</td>
+                        <td> ${{ payperiod.sick_hours_spent|mul:job.base_rate  }}</td>
+                    </tr>  
+                    {% endif %}
+                    {% if payperiod.holiday_hours_spent > 0 %}
+                    <tr class="gradeX">
+                        <td> Holiday Hours Spent</td>
+                        <td> {{payperiod.holiday_hours_spent}} </td>
+                        <td>{{ job.base_rate }}</td>
+                        <td> ${{ payperiod.holiday_hours_spent|mul:job.base_rate }}</td>
+                    </tr> 
+                    {% endif %}
+                    {% if payperiod.sick_hours > 0 %}
+
+                    <tr class="gradeX"> 
+                        <td> Sick Hours Acquired</td>   
+                        <td> {{ payperiod.sick_hours }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endif %}
+                    {% if payperiod.vacation_hours > 0 %}
+                    <tr class="gradeX">
+                        <td> Vacation Hours Acquired</td>  
+                        <td> {{ payperiod.vacation_hours }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endif %}
+                    <tr class="gradeX">   
+                        <td>Total:</td> 
+                        <td> {{ payperiod.sick_hours_spent|add:payperiod.holiday_hours_spent|add:payperiod.vacation_hours_spent|add:payperiod.hours|add:payperiod.overtime_hours}}</td>
+                        <td></td>
+                        {% with base=job.base_rate|mul:payperiod.hours %}
+                        {% with over=job.base_rate|mul:1.5|mul:payperiod.overtime_hours %}
+                        {% with inc_1=job.incremental_hours_1|mul:payperiod.incremental_hours_1 %}
+                        {% with inc_2=job.incremental_hours_2|mul:payperiod.incremental_hours_2 %}
+                        {% with sick=payperiod.sick_hours_spent|mul:job.base_rate %}
+                        {% with hol=payperiod.holiday_hours_spent|mul:job.base_rate %}
+                        {% with vac=payperiod.vacation_hours_spent|mul:job.base_rate %}
+
+                        <td> ${{ base|add:over|add:inc_1|add:inc_2|add:vac|add:sick|add:hol}}</td>
+                    </tr>
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+
+
+                    
+                    </tbody>
+                    </table>
+                        {% endifequal %}
+                        {% endfor %}
+                        {% endifequal %}
+                        {% endfor %}
+                        {% endfor %}
+                        {% endif %}
+                        {% endif %}
+                        {% endif %}
+                    {% if employees %}
+                    {% if bonuses %}
+                    <h3> Bonuses: </h3>
+                    <table class="table table-striped table-bordered table-hover " >
+                    <thead>
+                    <tr>
+                        <th> Date Bonus Given </th>
+                        <th> Amount </th>  
+                    </tr>
+                    </thead>
+                    <tbody>
+
+
+                        {% for bonus in bonuses %}
+                        {% for employee in employees %}
+                        {% ifequal employee.employee_id bonus.employee_id%}                      
+
+                    <tr class="gradeX">
+                        <td>{{ bonus.date_given.date }}</td>
+                        <td>{{ bonus.amount }}</td>
+
+                        {% endifequal %}
+                        {% endfor %}
+                        {% endfor %}
+
+                    </tr>
+                    </tbody>
+                    </table>
+                    {% endif %}
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="pull-right">
+                10GB of <strong>250GB</strong> Free.
+            </div>
+            <div>
+                <strong>Copyright</strong> Example Company &copy; 2014-2015
+            </div>
+        </div>
+
+        </div>
+        </div>
+
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-2.1.1.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+
+    <!-- Flot -->
+    <script src="{% static 'js/plugins/flot/jquery.flot.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.tooltip.min.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.spline.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.resize.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.pie.js' %}"></script>
+
+    <!-- Peity -->
+    <script src="{% static 'js/plugins/peity/jquery.peity.min.js' %}"></script>
+    <script src="{% static 'js/demo/peity-demo.js' %}"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+
+    <!-- jQuery UI -->
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+
+    <!-- GITTER -->
+    <script src="{% static 'js/plugins/gritter/jquery.gritter.min.js' %}"></script>
+
+    <!-- EayPIE -->
+    <script src="{% static 'js/plugins/easypiechart/jquery.easypiechart.js' %}"></script>
+
+    <!-- Sparkline -->
+    <script src="{% static 'js/plugins/sparkline/jquery.sparkline.min.js' %}"></script>
+
+    <!-- Sparkline demo data  -->
+    <script src="{% static 'js/demo/sparkline-demo.js' %}"></script>
+
+
+    <script src="{% static 'js/plugins/dataTables/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'js/plugins/dataTables/dataTables.bootstrap.js' %}"></script>
+    <script src="{% static 'js/plugins/dataTables/dataTables.responsive.js' %}"></script>
+    <script src="{% static 'js/plugins/dataTables/dataTables.tableTools.min.js' %}"></script>
+
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('.dataTables-example').dataTable({
+                responsive: true,
+                "dom": 'T<"clear">lfrtip',
+                "tableTools": {
+                    "sSwfPath": "js/plugins/dataTables/swf/copy_csv_xls_pdf.swf"
+                }
+            });
+
+            /* Init DataTables */
+            var oTable = $('#editable').dataTable();
+
+            /* Apply the jEditable handlers to the table */
+            oTable.$('td').editable( '../example_ajax.php', {
+                "callback": function( sValue, y ) {
+                    var aPos = oTable.fnGetPosition( this );
+                    oTable.fnUpdate( sValue, aPos[0], aPos[1] );
+                },
+                "submitdata": function ( value, settings ) {
+                    return {
+                        "row_id": this.parentNode.getAttribute('id'),
+                        "column": oTable.fnGetPosition( this )[2]
+                    };
+                },
+
+                "width": "90%",
+                "height": "100%"
+            } );
+
+
+        });
+
+        function fnClickAddRow() {
+            $('#editable').dataTable().fnAddData( [
+                "Custom row",
+                "New row",
+                "New row",
+                "New row",
+                "New row" ] );
+
+        }
+    </script>
+<style>
+    body.DTTT_Print {
+        background: #fff;
+
+    }
+    .DTTT_Print #page-wrapper {
+        margin: 0;
+        background:#fff;
+    }
+
+    button.DTTT_button, div.DTTT_button, a.DTTT_button {
+        border: 1px solid #e7eaec;
+        background: #fff;
+        color: #676a6c;
+        box-shadow: none;
+        padding: 6px 8px;
+    }
+    button.DTTT_button:hover, div.DTTT_button:hover, a.DTTT_button:hover {
+        border: 1px solid #d2d2d2;
+        background: #fff;
+        color: #676a6c;
+        box-shadow: none;
+        padding: 6px 8px;
+    }
+
+    .dataTables_filter label {
+        margin-right: 5px;
+
+    }
+</style>
+
+</body>
+</html>
