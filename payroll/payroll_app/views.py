@@ -25,7 +25,7 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
     employer_info = "To:, " + employer.employer_name + "\nAddress:, " + employer.address + "\n\n"  
     tex_file = employer_info
     allTotal = 0;
-    table_start = "Employee, Job, Start Date, End Date, Base Hours, Base Rate, Base Payment, Overtime Hours, Overtime Rate, Overtime Payment, Incremental 1 Hours, Incremntal 1 Rate, Incremntal 1 Payment, Incremental 2 Hours, Incremntal 2 Rate, Incremntal 2 Payment, Incremental 1_2 Hours, Incremntal 1_2 Rate, Incremntal 1_2 Payment, Vacation Hours Spent, Vacation Rate, Vacation Payment, Sick Hours Spent, Sick Rate, Sick Payment, Holiday Hours Spent, Holiday Rate, Holiday Payment, Sick Hours Acquired, Vacation Hours Acquired, Total Hours, Total Payment \n"      
+    table_start = "Employee, Job, Start Date, End Date, Base Hours, Base Rate, Base Payment, Overtime Hours, Overtime Rate, Overtime Payment, Incremental 1 Hours, Incremntal 1 Rate, Incremntal 1 Payment, Incremental 2 Hours, Incremntal 2 Rate, Incremntal 2 Payment, Vacation Hours Spent, Vacation Rate, Vacation Payment, Sick Hours Spent, Sick Rate, Sick Payment, Holiday Hours Spent, Holiday Rate, Holiday Payment, Sick Hours Acquired, Vacation Hours Acquired, Total Hours, Total Payment \n"      
     tex_file +=table_start
     for employee in employees: 
         employee_id = employee.employee_id
@@ -38,37 +38,28 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
                 if job.job_id == payperiod.job_id:
                     " Total Hours, Total Payment \n"      
                     all_row = employee.employee_name + ", " + job.job_title + ", " + str(payperiod.pay_start.strftime('%b/%d/%Y')) + ", " + str(payperiod.pay_end.strftime('%b/%d/%Y')) + ", "
-                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours +  payperiod.incremental_hours_1 + payperiod.incremental_hours_2 + payperiod.incremental_hours_1_and_2
+                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours 
                     base_pay =  payperiod.hours * job.base_rate;
                     all_row += str(payperiod.hours) + ", " + str(job.base_rate) + ", " + str(base_pay) + ", ";
                     total = base_pay;
                     overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
                     all_row += str(payperiod.overtime_hours) + ", " + str(Decimal(job.base_rate) * Decimal(1.5))+ ", " + str(overtime_pay) + ", ";
                     total = total + overtime_pay
-                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
-                    all_row += str(payperiod.incremental_hours_1) + ", " + str(job.base_rate + job.incremental_hours_1)+ ", " + str(incremental_pay1)+ ", " 
+                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.incremental_hours_1);
+                    all_row += str(payperiod.incremental_hours_1) + ", " + str(job.incremental_hours_1)+ ", " + str(incremental_pay1)+ ", " 
                     total = total + incremental_pay1
-                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
-                    all_row += str(payperiod.incremental_hours_2) + ", " + str(job.base_rate + job.incremental_hours_2)+ ", " + str(incremental_pay2)+ ", " 
+                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.incremental_hours_2);
+                    all_row += str(payperiod.incremental_hours_2) + ", " + str(job.incremental_hours_2)+ ", " + str(incremental_pay2)+ ", " 
                     total = total + incremental_pay2;
-                    incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
-                    all_row += str(payperiod.incremental_hours_1_and_2) + ", " + str(job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)+ ", " + str(incremental_pay12)+ ", " 
-                    total = total + incremental_pay12;
-                    vacation_rate = employee.vacation_pay_rate
-                    if vacation_rate == 0: 
-                        vacation_rate = job.base_rate
+                    vacation_rate = job.base_rate
                     vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                     all_row += str(payperiod.vacation_hours_spent) + ", " + str(vacation_rate) + ", " + str(vacation_pay) + ", "
                     total = total + vacation_pay
-                    sick_rate = employee.sick_pay_rate;
-                    if sick_rate == 0: 
-                        sick_rate = job.base_rate
+                    sick_rate = job.base_rate
                     sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                     all_row += str(payperiod.sick_hours_spent) + ", " + str(sick_rate) + ", " + str(sick_pay) + ", "
                     total = total + sick_pay
-                    holiday_pay_rate = employee.vacation_pay_rate;
-                    if holiday_pay_rate  == 0: 
-                        holiday_pay_rate  = job.base_rate
+                    holiday_pay_rate  = job.base_rate
                     holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                     all_row += str(payperiod.holiday_hours_spent) + ", " + str(holiday_pay_rate) + ", " + str(holiday_pay) + ", "                    
                     total = total + holiday_pay
@@ -115,10 +106,47 @@ def createPayPeriod(request):
 
 
 def getEmployeeSearchResults(request):
-    #employee_id = request.GET['employee_id']
-    #pay_period = request.GET['pay_period']
-    #job_title = request.GET['job_title']
-    return render(request, 'employee_search_results.html', {}) 
+    employer_id = '13492'
+    employee_id = request.GET['employee_id']
+    employees = Employee.objects.all().filter(employer_id = employer_id);
+    if not str(employee_id).isspace() and str(employee_id):
+        employees = employees.filter(employee_id = employee_id);
+    employee_name = request.GET['employee_name']
+    if not str(employee_name).isspace() and str(employee_name):
+        employees = employees.filter(employee_name__icontains = employee_name);
+    try:
+        start = request.GET['start_date']
+        start_date = datetime.datetime.strptime(str(start), "%Y-%m-%d")
+    except:
+        start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
+    try:
+        end = request.GET['end_date']
+        end_date = datetime.datetime.strptime(str(end), "%Y-%m-%d")
+    except:
+        end_date = datetime.datetime.today()
+    payperiod1 = PayPeriod.objects.all().filter(pay_start__gte = start_date)
+    payperiod1 = payperiod1.filter(pay_end__lte = end_date)
+    
+    jobs = Job.objects.all()
+
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
+    bonuses = bonuses.filter(date_given__lte = end_date);
+    return render(request, 'employee_search_results.html', {'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
+
+
+def getSingleEmployeeResult(request):
+    employee_id = request.GET['employee_id']
+    job_id = request.GET['job_id']
+    start = request.GET['start']
+    start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
+    end = request.GET['end']
+    end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
+    employees = Employee.objects.all().filter(employee_id = employee_id);
+    jobs = Job.objects.all().filter(job_id = job_id);
+    payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
+    bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
+    return render(request, 'single_employee_result.html', {'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
@@ -150,40 +178,29 @@ def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
                     overtime_row = "Overtime, " + str(payperiod.overtime_hours) + ", " + str((job.base_rate * Decimal(1.5))) + ", " + str(overtime_pay) + "\n"   
                     tex_file +=overtime_row; 
                 if payperiod.incremental_hours_1 > 0:
-                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.incremental_hours_1);
                     total = total + incremental_pay1
-                    incremental_row1 = "Incremental 1, " + str(payperiod.incremental_hours_1) + ", " + str((job.base_rate + job.incremental_hours_1)) + ", " + str(incremental_pay1) + "\n"   
+                    incremental_row1 = "Incremental 1, " + str(payperiod.incremental_hours_1) + ", " + str((job.incremental_hours_1)) + ", " + str(incremental_pay1) + "\n"   
                     tex_file +=incremental_row1; 
                 if payperiod.incremental_hours_2 > 0:
-                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
-                    incremental_row2 = "Incremental 2, " + str(payperiod.incremental_hours_2) + ", " + str((job.base_rate + job.incremental_hours_2)) + ", " + str(incremental_pay2) + "\n"   
+                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.incremental_hours_2);
+                    incremental_row2 = "Incremental 2, " + str(payperiod.incremental_hours_2) + ", " + str((job.incremental_hours_2)) + ", " + str(incremental_pay2) + "\n"   
                     total = total + incremental_pay2
                     tex_file +=incremental_row2;
-                if payperiod.incremental_hours_1_and_2 > 0:
-                    incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
-                    incremental_row12 = "Incremental 1 and 2, " + str(payperiod.incremental_hours_1_and_2) + ", " + str((job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)) + ", " + str(incremental_pay12) + "\n"   
-                    total = total + incremental_pay12
-                    tex_file += incremental_row12;
                 if payperiod.vacation_hours_spent > 0:
-                    vacation_rate = employee.vacation_pay_rate
-                    if vacation_rate == 0: 
-                        vacation_rate = job.base_rate
+                    vacation_rate = job.base_rate
                     vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                     total = total + vacation_pay
                     vacation_row = "Vacation, " + str(payperiod.vacation_hours_spent) + ", " + str((vacation_rate)) + ", " + str(vacation_pay) + "\n"   
                     tex_file += vacation_row; 
                 if payperiod.sick_hours_spent > 0:
-                    sick_rate = employee.sick_pay_rate;
-                    if sick_rate == 0: 
-                        sick_rate = job.base_rate
+                    sick_rate = job.base_rate
                     sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                     total = total + sick_pay
                     sick_row = "Sick, " + str(payperiod.sick_hours_spent) + ", " + str((sick_rate)) + ", " + str(sick_pay) + "\n"   
                     tex_file += sick_row;
                 if payperiod.holiday_hours_spent > 0:
-                    holiday_pay_rate = employee.vacation_pay_rate;
-                    if holiday_pay_rate  == 0: 
-                        holiday_pay_rate  = job.base_rate
+                    holiday_pay_rate  = job.base_rate
                     holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                     total = total + holiday_pay                        
                     holiday_row = "Holiday, " + str(payperiod.holiday_hours_spent) + ", " + str((holiday_pay_rate)) + ", " + str(holiday_pay) + "\n"   
@@ -227,40 +244,29 @@ def employeeBuilder( start_time, end_time, employee_id, employer_id):
                     overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(overtime_pay) + " \\\\\n\\hline\n"   
                     tex_file +=overtime_row; 
                 if payperiod.incremental_hours_1 > 0:
-                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                    incremental_pay1 =  payperiod.incremental_hours_1 * (job.incremental_hours_1);
                     total = total + incremental_pay1
-                    incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.base_rate + job.incremental_hours_1)) + " & " + str(incremental_pay1) + " \\\\\n\\hline\n"   
+                    incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.incremental_hours_1)) + " & " + str(incremental_pay1) + " \\\\\n\\hline\n"   
                     tex_file +=incremental_row1; 
                 if payperiod.incremental_hours_2 > 0:
-                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
-                    incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str((job.base_rate + job.incremental_hours_2)) + " & " + str(incremental_pay2) + " \\\\\n\\hline\n"   
+                    incremental_pay2 =  payperiod.incremental_hours_2 * (job.incremental_hours_2);
+                    incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str(job.incremental_hours_2) + " & " + str(incremental_pay2) + " \\\\\n\\hline\n"   
                     total = total + incremental_pay2
                     tex_file +=incremental_row2;
-                if payperiod.incremental_hours_1_and_2 > 0:
-                    incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
-                    incremental_row12 = "Incremental 1 and 2 & " + str(payperiod.incremental_hours_1_and_2) + " & " + str((job.base_rate + job.incremental_hours_2 + job.incremental_hours_1)) + " & " + str(incremental_pay12) + " \\\\\n\\hline\n"   
-                    total = total + incremental_pay12
-                    tex_file += incremental_row12;
                 if payperiod.vacation_hours_spent > 0:
-                    vacation_rate = employee.vacation_pay_rate
-                    if vacation_rate == 0: 
-                        vacation_rate = job.base_rate
+                    vacation_rate = job.base_rate
                     vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                     total = total + vacation_pay
                     vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
                     tex_file += vacation_row; 
                 if payperiod.sick_hours_spent > 0:
-                    sick_rate = employee.sick_pay_rate;
-                    if sick_rate == 0: 
-                        sick_rate = job.base_rate
+                    sick_rate = job.base_rate
                     sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                     total = total + sick_pay
                     sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
                     tex_file += sick_row;
                 if payperiod.holiday_hours_spent > 0:
-                    holiday_pay_rate = employee.vacation_pay_rate;
-                    if holiday_pay_rate  == 0: 
-                        holiday_pay_rate  = job.base_rate
+                    holiday_pay_rate  = job.base_rate
                     holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                     total = total + holiday_pay                        
                     holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
@@ -305,37 +311,28 @@ def employerBuilder(start_time, end_time, employer_id, columns, show_incremental
             for job in jobs:
                 if job.job_id == payperiod.job_id:
                     all_row = employee.employee_name + " & " + job.job_title + " & " + str(payperiod.pay_start.strftime('%b %d, %Y')) + " & " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " & "
-                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours +  payperiod.incremental_hours_1 + payperiod.incremental_hours_2 + payperiod.incremental_hours_1_and_2
+                    total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours 
                     base_pay =  payperiod.hours * job.base_rate;
                     total = base_pay;
                     if payperiod.overtime_hours > 0: 
                         overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
                         total = total + overtime_pay
                     if payperiod.incremental_hours_1 > 0:
-                        incremental_pay1 =  payperiod.incremental_hours_1 * (job.base_rate + job.incremental_hours_1);
+                        incremental_pay1 =  payperiod.incremental_hours_1 * (job.incremental_hours_1);
                         total = total + incremental_pay1
                     if payperiod.incremental_hours_2 > 0:
-                        incremental_pay2 =  payperiod.incremental_hours_2 * (job.base_rate + job.incremental_hours_2);
+                        incremental_pay2 =  payperiod.incremental_hours_2 * (job.incremental_hours_2);
                         total = total + incremental_pay2;
-                    if payperiod.incremental_hours_1_and_2 > 0:
-                        incremental_pay12 =  payperiod.incremental_hours_1_and_2 * (job.base_rate + job.incremental_hours_2 + job.incremental_hours_1);
-                        total = total + incremental_pay12;
                     if payperiod.vacation_hours_spent > 0:
-                        vacation_rate = employee.vacation_pay_rate
-                        if vacation_rate == 0: 
-                            vacation_rate = job.base_rate
+                        vacation_rate = job.base_rate
                         vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                         total = total + vacation_pay
                     if payperiod.sick_hours_spent > 0:
-                        sick_rate = employee.sick_pay_rate;
-                        if sick_rate == 0: 
-                            sick_rate = job.base_rate
+                        sick_rate = job.base_rate
                         sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                         total = total + sick_pay
                     if payperiod.holiday_hours_spent > 0:
-                        holiday_pay_rate = employee.vacation_pay_rate;
-                        if holiday_pay_rate  == 0: 
-                            holiday_pay_rate  = job.base_rate
+                        holiday_pay_rate  = job.base_rate
                         holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                         total = total + holiday_pay   
                     allTotal += total;
@@ -466,43 +463,6 @@ def getPayrollCSV(request):
 # Create your views here
 @csrf_exempt
 def getPayrollData(request):
-
-    #Employer.objects.all().delete()
-    #Employee.objects.all().delete()
-    #Job.objects.all().delete()
-    #PayPeriod.objects.all().delete()
-    #employer1 = Employer(employer_id="12468",employer_name="Amazon", address="265 Lytton Ave.", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE1"))
-    #employer2 = Employer(employer_id="13492",employer_name="Microsoft", address="610 Mayfield Ave", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hash_key=make_password("HASHVALUE2"))
-    #employee1 = Employee(employee_id="78932",employer_id="12468", employee_name = "Naveen Krishnamurthi", vacation_hours = 6.00, vacation_pay_rate = 60.00, sick_hours = 12.00, sick_pay_rate = 60.00, vacation_accrual_rate = 0.01, address="12795 Calle De La Siena, San Diego CA, 92130")
-    #employee2 = Employee(employee_id="78777",employer_id="13492", employee_name = "Danial Shakeri", vacation_hours = 8.00, vacation_pay_rate = 62.00, sick_hours = 13.00, sick_pay_rate = 64.00, vacation_accrual_rate = 0.02, address="265 Westfield Ave., San Diego CA, 92130")
-    # employee3 = Employee(employee_id="78412",employer_id="13492", employee_name = "Kevin Miller", vacation_hours = 10.00, vacation_pay_rate = 65.00,  sick_hours = 14.00, sick_pay_rate = 65.00, vacation_accrual_rate = 0.01, address="710 New York St., New York NY, 94099")
-    # job1 = Job(job_id="8933", employee_id="78932", base_rate = 65.00, incremental_hours_1=2.50, incremental_hours_2=0.00, job_title = "Designer")
-    # job2 = Job(job_id="7412", employee_id="78932", base_rate = 70.00, incremental_hours_1=1.00, incremental_hours_2=0.00, job_title = "Engineer I")
-    # job3 = Job(job_id="8935", employee_id="78777", base_rate = 68.00, incremental_hours_1=2.50, incremental_hours_2=2.00, job_title = "Engineer II")
-    # job4 = Job(job_id="8936", employee_id="78412", base_rate = 67.00, incremental_hours_1=2.50, incremental_hours_2=0.00, job_title = "Engineer II")
-    # bp1 = BonusPay(bonus_id="1234", employee_id="78777", amount = 1000.01, pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), date_given=datetime.datetime(2013, 12, 25, 17, 18, 40))
-    # bp2 = BonusPay(bonus_id="1256", employee_id="78412", amount = 1700.99, pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), date_given=datetime.datetime(2013, 12, 25, 17, 18, 40))
-    # employer1.save()
-    # employer2.save()
-    # employee1.save()
-    # employee2.save()
-    # employee3.save()
-    # job1.save()
-    # job2.save()
-    # job3.save()
-    # job4.save()
-    # bp1.save()
-    # bp2.save()
-    # PayPeriod.objects.all().delete()
-    # payPeriod1 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 11, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 25, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod2 = PayPeriod(employee_id="78777", job_id="8935", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod3 = PayPeriod(employee_id="78412", job_id="8936", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-    # payPeriod4 = PayPeriod(employee_id="78932", job_id="7412", pay_start=datetime.datetime(2013, 12, 1, 17, 15, 30), pay_end=datetime.datetime(2013, 12, 10, 17, 18, 40), hours = 40, overtime_hours = 2, incremental_hours_1 = 1, incremental_hours_2 = 2, incremental_hours_1_and_2 = 2, holiday_hours = 10, sick_hours = 12, vacation_hours = 12, holiday_hours_spent = 4, sick_hours_spent = 2, vacation_hours_spent = 1)
-
-    # payPeriod1.save()
-    # payPeriod2.save()
-    # payPeriod3.save()
-    # payPeriod4.save()
     json_data = json.loads(request.body)
 
     try:

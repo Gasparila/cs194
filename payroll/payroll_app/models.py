@@ -16,8 +16,6 @@ class Employee(models.Model):
 	employee_name = models.CharField(max_length=100)
 	vacation_hours = models.DecimalField(max_digits = 8, decimal_places = 2)
 	vacation_pay_rate = models.DecimalField(max_digits = 8, decimal_places = 2)
-	#holiday_hours = models.DecimalField(max_digits = 8, decimal_places = 2)
-	#holiday_pay_rate = models.DecimalField(max_digits = 8, decimal_places = 2)
 	sick_hours = models.DecimalField(max_digits = 8, decimal_places = 2)
 	sick_pay_rate = models.DecimalField(max_digits = 8, decimal_places = 2)
 	vacation_accrual_rate = models.DecimalField(max_digits = 8, decimal_places = 2)

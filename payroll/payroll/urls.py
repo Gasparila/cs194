@@ -18,7 +18,7 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^createAccounts/', 'createAccounts'),
     url(r'^employeeSearch/$', 'employeeSearch'),
     url(r'^employeeSearchResults/$', 'getEmployeeSearchResults'),
-
+    url(r'^employeeSearchResults/singleEmployeeResult/$', 'getSingleEmployeeResult'),
     #web-create
     url(r'^createEmployee$', 'createEmployee'),
     url(r'^createJob$', 'createJob'),
