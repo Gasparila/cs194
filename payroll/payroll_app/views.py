@@ -19,9 +19,12 @@ import auth_utils
 import csv_utils
 import web_utils
 
-def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent):
+def employerCSVBuilder(start_time, end_time, employer_id, employee_name):
     employer = Employer.objects.get(employer_id = employer_id)
     employees = Employee.objects.all().filter(employer_id = employer_id)
+    if not str(employee_name).isspace() and str(employee_name):
+        employees = employees.filter(employee_name__icontains = employee_name);
+
     employer_info = "To:, " + employer.employer_name + "\nAddress:, " + employer.address + "\n\n"  
     tex_file = employer_info
     allTotal = 0;
@@ -37,7 +40,7 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
             for job in jobs:
                 if job.job_id == payperiod.job_id:
                     " Total Hours, Total Payment \n"      
-                    all_row = employee.employee_name + ", " + job.job_title + ", " + str(payperiod.pay_start.strftime('%b/%d/%Y')) + ", " + str(payperiod.pay_end.strftime('%b/%d/%Y')) + ", "
+                    all_row = employee.employee_name + ", " + job.job_title + ", " + str(payperiod.pay_start.strftime('%m/%d/%Y')) + ", " + str(payperiod.pay_end.strftime('%m/%d/%Y')) + ", "
                     total_hours = payperiod.sick_hours_spent + payperiod.holiday_hours_spent + payperiod.vacation_hours_spent + payperiod.hours + payperiod.overtime_hours 
                     base_pay =  payperiod.hours * job.base_rate;
                     all_row += str(payperiod.hours) + ", " + str(job.base_rate) + ", " + str(base_pay) + ", ";
@@ -67,73 +70,19 @@ def employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremen
                     allTotal += total;
                     all_row += str(total_hours) + ", " + str(total) + "\n";    
                     tex_file += all_row;   
-    tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n"      
+    tex_file += ",,,,,,,,,,,,,,,,,,,,,,,,,,, Total:, " + str(allTotal) +" \n\n\n"
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
+    bonuses = bonuses.filter(date_given__lte = end_time);
+    if bonuses:
+        tex_file += "Bonuses:\n Employee ID, Employee, Date Bonus Given, Amount \n"
+        for bonus in bonuses:
+            for employee in employees:
+                if bonus.employee_id == employee.employee_id:
+                    tex_file += employee.employee_id + ", " + employee.employee_name + ", " + str(bonus.date_given.strftime('%m/%d/%Y'))+ ", " + str(bonus.amount) + "\n"; 
     return tex_file
 
-def createEmployeeSubmit(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
-        if error is None:
-            message = "Successfully created entry for %s" % request.GET['employee_name']
-            messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_employee.html', {'error': False,}) 
-        else:
-            messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_employee.html', {'error': True,}) 
-
-def createJobSubmit(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
-        if error is None:
-            message = "Successfully created entry for %s" % request.GET.get('job_title')
-            messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_job.html', {'error': False,}) 
-        else:
-            messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_job.html', {'error': True,})
-
-def createBonusSubmit(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
-        if error is None:
-            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
-            messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_bonus.html', {'error': False,}) 
-        else:
-            messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_bonus.html', {'error': True,})
-
-def createEmployee(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        return render(request, 'create_employee.html', {}) 
-def createJob(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        return render(request, 'create_job.html', {}) 
-
-def createBonus(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        return render(request, 'create_bonus.html', {}) 
-
-def createPayPeriod(request):
-    if not request.user.is_authenticated(): return redirect('/login')   
-    else:
-        return render(request, 'create_pay_period.html', {}) 
-
-
 def getEmployeeSearchResults(request):
-    employer_id = '13492'
+    employer_id = request.session['email'] 
     employee_id = request.GET['employee_id']
     employees = Employee.objects.all().filter(employer_id = employer_id);
     if not str(employee_id).isspace() and str(employee_id):
@@ -157,23 +106,125 @@ def getEmployeeSearchResults(request):
     jobs = Job.objects.all()
 
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
-    bonuses = bonuses.filter(date_given__lte = end_date);
+    bonuses = bonuses.filter(date_given__lte = end_date+ datetime.timedelta(days=1));
     return render(request, 'employee_search_results.html', {'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
 def getSingleEmployeeResult(request):
+    employer_id = request.session['email']
+    print employer_id 
     employee_id = request.GET['employee_id']
     job_id = request.GET['job_id']
     start = request.GET['start']
     start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
     end = request.GET['end']
     end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
-    employees = Employee.objects.all().filter(employee_id = employee_id);
+    employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
     return render(request, 'single_employee_result.html', {'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
+
+@csrf_exempt
+def getPayrollCSV(request):
+    json_data = json.loads(request.body)
+    csv_contents ="";
+    try:
+        employee_id = json_data['employee_id']
+        if str(employee_id).isspace() or not str(employee_id):
+            employee_id = "*"
+    except KeyError:
+        employee_id = "*"
+    try:
+        start = json_data['start']
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+    except:
+        start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
+    try:
+        end = json_data['end']
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+    except:
+        end_time = datetime.datetime.today()
+
+    try:
+        employee_name = json_data['employee_name']
+    except:
+        employee_name = ""
+    try:
+        employer_id = json_data['employer_id']
+        employer_key = json_data['key']
+    except:
+        csv_contents = "Invalid Employer ID/Key";
+    if not auth_utils.check_employer(employer_id, employer_key):
+       csv_contents = "Invalid Employer ID/Key";
+    if csv_contents == "":    
+        employer = Employer.objects.get(employer_id = employer_id)
+        if employer_id ==  employer.employer_id: 
+            if employee_id != "*":
+                csv_contents = employeeCSVBuilder(start_time, end_time, employee_id, employer_id);
+            else:
+                csv_contents = employerCSVBuilder(start_time, end_time, employer_id, employee_name);
+
+            return HttpResponse(csv_contents, content_type='text/csv')
+    return HttpResponse(csv_contents, content_type='text/csv')
+
+# Create your views here
+@csrf_exempt
+def getPayrollData(request):
+    json_data = json.loads(request.body)
+    pdf_contents ="";
+    try:
+        employee_id = json_data['employee_id']
+        if str(employee_id).isspace() or not str(employee_id):
+            employee_id = "*"
+    except KeyError:
+        employee_id = "*"
+    try:
+        start = json_data['start']
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+    except:
+        start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
+    try:
+        end = json_data['end']
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+    except:
+        end_time = datetime.datetime.today()
+    try:
+        employee_name = json_data['employee_name']
+    except:
+        employee_name = ""
+    try:
+        employer_id = json_data['employer_id']
+        employer_key = json_data['key']
+    except:
+        pdf_contents = "Invalid Employer ID/Key";
+    if not auth_utils.check_employer(employer_id, employer_key):
+       pdf_contents = "Invalid Employer ID/Key";
+
+    tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
+    pdf_name = employer_id + "_" + employee_id + ".pdf"
+    tex = open( tex_name,'w')
+    if pdf_contents == "":
+        employer = Employer.objects.get(employer_id = employer_id)
+        if employee_id != "*":
+            emplyee_tex = employeeBuilder( start_time, end_time, employee_id, employer_id);
+            tex.write(emplyee_tex);
+        else:
+            employer_tex = employerBuilder(start_time, end_time, employer_id);
+            tex.write(employer_tex);
+
+    else:
+        tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
+        tex_file += pdf_contents + "\n\\end{document}";
+        tex.write(tex_file);
+    
+    tex.close();
+    call("pdflatex -output-directory payroll_app/static/pdf " + tex_name, shell=True)
+    f = open("payroll_app/static/pdf/" + pdf_name , 'r')
+    pdf_contents = f.read()
+    f.close()
+    return HttpResponse(pdf_contents, content_type='application/pdf')  
 
 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
@@ -191,7 +242,7 @@ def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     for payperiod in payperiod1:
         for job in jobs:
             if job.job_id == payperiod.job_id:
-                payPeriod_info = "Pay Period:, " + str(payperiod.pay_start.strftime('%b/%d/%Y')) + ", to, " + str(payperiod.pay_end.strftime('%b/%d/%Y')) + " \nJob:, " + job.job_title + " \n"
+                payPeriod_info = "Pay Period:, " + str(payperiod.pay_start.strftime('%m/%d/%Y')) + ", to, " + str(payperiod.pay_end.strftime('%m/%d/%Y')) + " \nJob:, " + job.job_title + " \n"
                 tex_file += payPeriod_info
                 table_start = "Type, Hours, Rate, Payment\n"      
                 tex_file += table_start
@@ -237,9 +288,17 @@ def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
                 table_start = "Type, Hours Gained, Total\n"
                 tex_file += table_start;
                 vacation_row = "Vacation Hours, " + str(payperiod.vacation_hours) + ", " + str((employee.vacation_hours)) +" \n" 
-                sick_row = "Sick Hours, " + str(payperiod.sick_hours) + ", " + str((employee.sick_hours)) +"\n" 
+                sick_row = "Sick Hours, " + str(payperiod.sick_hours) + ", " + str((employee.sick_hours)) +"\n\n\n" 
                 tex_file += vacation_row
                 tex_file += sick_row
+
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
+    bonuses = bonuses.filter(date_given__lte = end_time );
+    bonuses = bonuses.filter(employee_id = employee.employee_id);
+    if bonuses:
+        tex_file += "Bonuses:\n Date Bonus Given, Amount \n"
+        for bonus in bonuses:
+            tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + ", " + str(bonus.amount) + "\n"; 
     return tex_file
 
 def employeeBuilder( start_time, end_time, employee_id, employer_id):
@@ -308,6 +367,15 @@ def employeeBuilder( start_time, end_time, employee_id, employer_id):
                 tex_file += sick_row
                 table_end = "\\end{tabular}\n\\end{table}\n\n\n"
                 tex_file += table_end
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
+    bonuses = bonuses.filter(date_given__lte = end_time + datetime.timedelta(days=1));
+    bonuses = bonuses.filter(employee_id = employee.employee_id);
+    if bonuses:
+        tex_file += "Bonuses: \\\\\n\\begin{table}[htb]\n\\begin{tabular}{| l | l | }\n\\hline\n\\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
+        for bonus in bonuses:
+            tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(bonus.amount) + "\\\\\n\\hline\n";
+        table_end = "\\end{tabular}\n\\end{table}\n\n\n"
+        tex_file += table_end;
     tex_file += "\\end{document}"
     return tex_file
 
@@ -316,15 +384,13 @@ def employeeSearch(request):
     else:
         return render(request, 'employee_search.html', {})  
 
-def employerBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent):
+def employerBuilder(start_time, end_time, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
     employees = Employee.objects.all().filter(employer_id = employer_id)
     employer_info = "To: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
     tex_file += employer_info
     table = "| l | l | l | l | l | l |"
-    for i in range(columns):
-        table += " l |"
     allTotal = 0;
     table_start = "\\begin{table}[htb]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
     tex_file +=table_start
@@ -368,8 +434,81 @@ def employerBuilder(start_time, end_time, employer_id, columns, show_incremental
     tex_file += "\\textbf{Total:} & & & & & \\textbf{\\$" + str(allTotal) + "}\\\\\n\\hline\n"
     end_table = "\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
     tex_file += end_table;
+    bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
+    bonuses = bonuses.filter(date_given__lte = end_time + datetime.timedelta(days=1));
+    if bonuses:
+        tex_file += "Bonuses: \\\\\n\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | l |}\n\\hline\n\\textbf{Employee ID} & \\textbf{Employee} & \\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
+        for bonus in bonuses:
+            for employee in employees:
+                if employee.employee_id == bonus.employee_id:
+                    tex_file += employee.employee_id + " & " + employee.employee_name + " & " + str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(bonus.amount) + "\\\\\n\\hline\n";
+        table_end = "\\end{tabular}\n\\end{table}\n\n\n"
+        tex_file += table_end;
     tex_file += "\\end{document}"
     return tex_file
+
+
+def createEmployeeSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET['employee_name']
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_employee.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_employee.html', {'error': True,}) 
+
+def createJobSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        if error is None:
+            message = "Successfully created entry for %s" % request.GET.get('job_title')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_job.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_job.html', {'error': True,})
+
+def createBonusSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = "8675-309"
+        employer_key = "private_key"
+        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        if error is None:
+            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_bonus.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_bonus.html', {'error': True,})
+
+def createEmployee(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        return render(request, 'create_employee.html', {}) 
+def createJob(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        return render(request, 'create_job.html', {}) 
+
+def createBonus(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        return render(request, 'create_bonus.html', {}) 
+
+def createPayPeriod(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        return render(request, 'create_pay_period.html', {}) 
+
 # Create your views here.
 def index(request):
     #If the user is logged in, show them the dashboard
@@ -423,182 +562,6 @@ def createAccounts(request):
     user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
     user.save()
     return redirect('/login')    
-
-@csrf_exempt
-def getPayrollCSV(request):
-    json_data = json.loads(request.body)
-
-    try:
-        employer_id = json_data['employer_id']
-        employer_key = json_data['key']
-        start = json_data['start']
-        end = json_data['end']
-    except KeyError:
-        raise Http404("EmployeeID, or employer info not found")
-    if not auth_utils.check_employer(employer_id, employer_key):
-        raise Http404("Invalid Employer ID/Key" )
-    try:
-        employee_id = json_data['employee_id']
-    except KeyError:
-        raise Http404("Employee info not found")
-
-    columns = 0;
-    try:
-        show_incremental_hours = json_data['incremental_hours']
-        columns += 3;
-        show_incremental_hours = True
-    except KeyError:
-        show_incremental_hours = False 
-    try:
-        show_overtime_hours = json_data['overtime_hours']
-        show_overtime_hours = True
-        columns+=1;
-    except KeyError:
-        show_overtime_hours = False 
-    try:
-        show_holiday_hours = json_data['holiday_hours']
-        show_holiday_hours = True
-        columns+=1;
-    except KeyError:
-        show_holiday_hours = False
-    try:
-        show_vacation_hours = json_data['vacation_hours']
-        columns+=1;
-        show_vacation_hours = True
-    except KeyError:
-        show_vacation_hours = False
-    try:
-        show_sick_hours = json_data['sick_hours']
-        columns+=1;
-        show_sick_hours = True
-    except KeyError:
-        show_sick_hours = False
-    try:
-        show_holiday_hours_spent = json_data['holiday_hours_spent']
-        columns+=1;
-        show_holiday_hours_spent = True
-    except KeyError:
-        show_holiday_hours_spent = False
-    try:
-        show_vacation_hours_spent = json_data['vacation_hours_spent']
-        columns+=1;
-        show_vacation_hours_spent = True
-    except KeyError:
-        show_vacation_hours_spent = False
-    try:
-        show_sick_hours_spent = json_data['sick_hours_spent']
-        columns+=1;
-        show_sick_hours_spent = True
-    except KeyError:
-        show_sick_hours_spent = False
-
-    start_time = datetime.datetime.strptime(start, "%m/%d/%y")
-    end_time = datetime.datetime.strptime(end, "%m/%d/%y")
-    tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
-    pdf_name = employer_id + "_" + employee_id + ".pdf"
-    
-    pdf_contents ="";
-    employer = Employer.objects.get(employer_id = employer_id)
-    if employer_id ==  employer.employer_id: 
-        if employee_id != "*":
-            pdf_contents = employeeCSVBuilder( start_time, end_time, employee_id, employer_id);
-        else:
-            pdf_contents = employerCSVBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent );
-
-        return HttpResponse(pdf_contents, content_type='application/pdf')
-    tex.close()
-    return render(request, 'payroll_data.html', {})
-# Create your views here
-@csrf_exempt
-def getPayrollData(request):
-    json_data = json.loads(request.body)
-
-    try:
-        employer_id = json_data['employer_id']
-        employer_key = json_data['key']
-        start = json_data['start']
-        end = json_data['end']
-    except KeyError:
-        raise Http404("EmployeeID, or employer info not found")
-    if not auth_utils.check_employer(employer_id, employer_key):
-        raise Http404("Invalid Employer ID/Key" )
-    try:
-        employee_id = json_data['employee_id']
-    except KeyError:
-        raise Http404("Employee info not found")
-
-    columns = 0;
-    try:
-        show_incremental_hours = json_data['incremental_hours']
-        columns += 3;
-        show_incremental_hours = True
-    except KeyError:
-        show_incremental_hours = False 
-    try:
-        show_overtime_hours = json_data['overtime_hours']
-        show_overtime_hours = True
-        columns+=1;
-    except KeyError:
-        show_overtime_hours = False 
-    try:
-        show_holiday_hours = json_data['holiday_hours']
-        show_holiday_hours = True
-        columns+=1;
-    except KeyError:
-        show_holiday_hours = False
-    try:
-        show_vacation_hours = json_data['vacation_hours']
-        columns+=1;
-        show_vacation_hours = True
-    except KeyError:
-        show_vacation_hours = False
-    try:
-        show_sick_hours = json_data['sick_hours']
-        columns+=1;
-        show_sick_hours = True
-    except KeyError:
-        show_sick_hours = False
-    try:
-        show_holiday_hours_spent = json_data['holiday_hours_spent']
-        columns+=1;
-        show_holiday_hours_spent = True
-    except KeyError:
-        show_holiday_hours_spent = False
-    try:
-        show_vacation_hours_spent = json_data['vacation_hours_spent']
-        columns+=1;
-        show_vacation_hours_spent = True
-    except KeyError:
-        show_vacation_hours_spent = False
-    try:
-        show_sick_hours_spent = json_data['sick_hours_spent']
-        columns+=1;
-        show_sick_hours_spent = True
-    except KeyError:
-        show_sick_hours_spent = False
-
-    start_time = datetime.datetime.strptime(start, "%m/%d/%y")
-    end_time = datetime.datetime.strptime(end, "%m/%d/%y")
-    tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
-    pdf_name = employer_id + "_" + employee_id + ".pdf"
-    
-    tex = open( tex_name,'w')
-    employer = Employer.objects.get(employer_id = employer_id)
-    if employer_id ==  employer.employer_id: 
-        if employee_id != "*":
-            emplyee_tex = employeeBuilder( start_time, end_time, employee_id, employer_id);
-            tex.write(emplyee_tex);
-        else:
-            employer_tex = employerBuilder(start_time, end_time, employer_id, columns, show_incremental_hours, show_overtime_hours, show_holiday_hours, show_vacation_hours, show_sick_hours, show_holiday_hours_spent, show_vacation_hours_spent, show_sick_hours_spent );
-            tex.write(employer_tex);
-        tex.close();
-        call("pdflatex -output-directory payroll_app/static/pdf " + tex_name, shell=True)
-        f = open("payroll_app/static/pdf/" + pdf_name , 'r')
-        pdf_contents = f.read()
-        f.close()
-        return HttpResponse(pdf_contents, content_type='application/pdf')
-    tex.close()
-    return render(request, 'payroll_data.html', {})
 
 #TODO: remove this since we should manually add companies
 @csrf_exempt

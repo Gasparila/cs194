@@ -50,4 +50,18 @@ curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"em
 
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollData > timecard.pdf
 
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
+
+Mandatory: 
+Employer_ID
+Key
+
+Optional:
+employee_name or employee_id
+start
+end
+
+If employee_id is given then return employee page otherwise will return employer page 
+GetPayrollData returns pdf
+GetPayrollCSV returns csv
 
