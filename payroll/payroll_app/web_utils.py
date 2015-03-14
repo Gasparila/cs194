@@ -23,6 +23,9 @@ def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremen
     if (job_id or '') == '': return "Job ID is required"
     if (employee_id or '') == '': return "Employee ID is required"
     if (job_title or '') == '': return "Job title is required"
+    if (base_rate or '') == '': return "Base Rate is required"
+    if not Employee.objects.filter(employee_id = employee_id).exists():
+        return "There is no employee with id %s" % employee_id
     try:
         base_rate = float(base_rate)
     except:
