@@ -451,9 +451,8 @@ def employerBuilder(start_time, end_time, employer_id):
 def createEmployeeSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        employer_id = request.session['email']
+        error = web_utils.addEmployee(employer_id, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
         if error is None:
             message = "Successfully created entry for %s" % request.GET['employee_name']
             messages.add_message(request, messages.INFO, message)
