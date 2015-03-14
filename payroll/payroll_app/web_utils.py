@@ -18,9 +18,8 @@ def addEmployee(employer_id, employee_id, employee_name, address, vacation_hours
     employee.save()
     return None
 
-def addJob(employer_id, employer_key, job_id, employee_id, job_title, base_rate=None, incremental_hours_1=None, incremental_hours_2=None):
+def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremental_hours_1=None, incremental_hours_2=None):
     if employer_id is None: return "Employer ID is required"
-    if employer_key is None: return "Employer key is required"
     if job_id is None: return "Job ID is required"
     if employee_id is None: return "Employee ID is required"
     if job_title is None: return "Job title is required"
@@ -38,8 +37,6 @@ def addJob(employer_id, employer_key, job_id, employee_id, job_title, base_rate=
         incremental_hours_2 = 0
     if Job.objects.filter(job_id = job_id).exists():
         return "Job %s Already Exists" % job_id
-    if not auth_utils.check_employer(employer_id, employer_key):
-        return "Invalid employer ID/key"
     job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
     job.save()
     return None

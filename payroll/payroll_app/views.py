@@ -464,9 +464,8 @@ def createEmployeeSubmit(request):
 def createJobSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        employer_id = request.session['email']
+        error = web_utils.addJob(employer_id, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
         if error is None:
             message = "Successfully created entry for %s" % request.GET.get('job_title')
             messages.add_message(request, messages.INFO, message)
