@@ -477,9 +477,8 @@ def createJobSubmit(request):
 def createBonusSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        employer_id = request.session['email']
+        error = web_utils.addBonus(employer_id, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
         if error is None:
             message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
             messages.add_message(request, messages.INFO, message)

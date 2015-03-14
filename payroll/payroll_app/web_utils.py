@@ -41,7 +41,7 @@ def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremen
     job.save()
     return None
 
-def addBonus(employer_id, employer_key, bonus_id, employee_id, amount, pay_start=None, pay_end=None, date_given=None):
+def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end=None, date_given=None):
     cur_time = datetime.datetime.now()
     if bonus_id is None: return "Bonus ID is required"
     if employee_id is None: return "Employee ID is required"
@@ -60,8 +60,6 @@ def addBonus(employer_id, employer_key, bonus_id, employee_id, amount, pay_start
         date_given = cur_time
     if BonusPay.objects.filter(bonus_id = bonus_id).exists():
         return "Bonus %s Already Exists" % bonus_id
-    if not auth_utils.check_employer(employer_id, employer_key) :
-        return "Invalid Employer ID/Key"
     bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
     bonus.save()
     return None
