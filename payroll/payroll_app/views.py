@@ -5,6 +5,7 @@ from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from decimal import *
 from tempfile import *
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
@@ -92,17 +93,21 @@ def getEmployeeSearchResults(request):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
         start = request.GET['start_date']
-        start_date = datetime.datetime.strptime(str(start), "%Y-%m-%d")
+        start_date = datetime.datetime.strptime(str(start), "%m/%d/%Y")
     except:
         start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = request.GET['end_date']
-        end_date = datetime.datetime.strptime(str(end), "%Y-%m-%d")
+        end_date = datetime.datetime.strptime(str(end), "%m/%d/%Y")
     except:
         end_date = datetime.datetime.today()
+    #Bug Fix: Make start and end dates timezone aware to allow comparisons
+    start_date = timezone.make_aware(start_date, timezone.get_default_timezone())
+    end_date = timezone.make_aware(end_date, timezone.get_default_timezone())
+
     payperiod1 = PayPeriod.objects.all().filter(pay_start__gte = start_date)
     payperiod1 = payperiod1.filter(pay_end__lte = end_date)
-    
+
     jobs = Job.objects.all()
 
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
