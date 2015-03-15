@@ -93,12 +93,12 @@ def getEmployeeSearchResults(request):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
         start = request.GET['start_date']
-        start_date = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+        start_date = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = request.GET['end_date']
-        end_date = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+        end_date = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_date = datetime.datetime.today()
     #Bug Fix: Make start and end dates timezone aware to allow comparisons
@@ -117,13 +117,11 @@ def getEmployeeSearchResults(request):
 
 def getSingleEmployeeResult(request):
     employer_id = request.session['email']
-    print employer_id 
-    employee_id = request.GET['employee_id']
     job_id = request.GET['job_id']
     start = request.GET['start']
     start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
     end = request.GET['end']
-    end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
+    end_date = datetime.datetime.strptime(end, "%b. %d, %y")
     employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
@@ -143,12 +141,12 @@ def getPayrollCSV(request):
         employee_id = "*"
     try:
         start = json_data['start']
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = json_data['end']
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_time = datetime.datetime.today()
 
@@ -187,12 +185,12 @@ def getPayrollData(request):
         employee_id = "*"
     try:
         start = json_data['start']
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = json_data['end']
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_time = datetime.datetime.today()
     try:
