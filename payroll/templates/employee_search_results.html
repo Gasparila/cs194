@@ -459,7 +459,27 @@
 
         }
     </script>
+
+    <script src="{% static 'js/jquery.fileDownload.js' %}"></script>
+    <script>
+        $(function() {
+            $(document).on("click", "a.fileDownloadSimpleRichExperience", function() {
+                $.fileDownload($(this).attr('href'), {
+                    preparingMessageHtml: "We are preparing your report, please wait...",
+                    failMessageHtml: "There was a problem generating your report, please try again."
+                });
+                    return false; //this is critical to stop the click event which will trigger a normal file download!
+            });
+        });
+    </script>
+    <a href="http://jqueryfiledownload.apphb.com/FileDownload/DownloadReport/0" class="fileDownloadSimpleRichExperience">Report0.pdf</a>
+
+
 <style>
+    #ToolTables_DataTables_Table_0_0, #ToolTables_DataTables_Table_0_4{
+        display: none;
+    }
+
     body.DTTT_Print {
         background: #fff;
 
