@@ -121,7 +121,8 @@ def getSingleEmployeeResult(request):
     start = request.GET['start']
     start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
     end = request.GET['end']
-    end_date = datetime.datetime.strptime(end, "%b. %d, %y")
+    end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
+    employee_id = request.GET['employee_id']
     employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
