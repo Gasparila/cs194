@@ -95,7 +95,7 @@
                                             {{message}}.
                                         </div>
                                 {% endfor %}
-                                <form action="/createPayPeriodSubmit" enctype="multipart/form-data" method="post" class="form-horizontal">
+                                <form action="/createPayPeriodSubmit/" enctype="multipart/form-data" method="post" class="form-horizontal">
                                     {% csrf_token %}
                                     <div class="form-group"><label class="col-sm-2 control-label">Pay Start</label>
                                         <div class="col-sm-10"><input name="pay_start" type="text" class="form-control"> 

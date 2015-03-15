@@ -456,9 +456,9 @@ def createEmployeeSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
         employer_id = request.session['email']
-        error = web_utils.addEmployee(employer_id, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        error = web_utils.addEmployee(employer_id, request.POST.get('employee_id'),request.POST.get('employee_name'), request.POST.get('employee_address'), request.POST.get('vacation_hours'), request.POST.get('vacation_pay_rate'), request.POST.get('sick_hours'), request.POST.get('sick_pay_rate'), request.POST.get('vacation_accrual_rate'))
         if error is None:
-            message = "Successfully created entry for %s" % request.GET['employee_name']
+            message = "Successfully created entry for %s" % request.POST['employee_name']
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_employee.html', {'error': False,}) 
         else:
@@ -469,9 +469,9 @@ def createJobSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
         employer_id = request.session['email']
-        error = web_utils.addJob(employer_id, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        error = web_utils.addJob(employer_id, request.POST.get('job_id'), request.POST.get('employee_id'), request.POST.get('job_title'), request.POST.get('base_rate'), request.POST.get('incremental_rate_one'), request.POST.get('incremental_rate_two'))
         if error is None:
-            message = "Successfully created entry for %s" % request.GET.get('job_title')
+            message = "Successfully created entry for %s" % request.POST.get('job_title')
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_job.html', {'error': False,}) 
         else:
@@ -482,9 +482,9 @@ def createBonusSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
         employer_id = request.session['email']
-        error = web_utils.addBonus(employer_id, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        error = web_utils.addBonus(employer_id, request.POST.get('bonus_id'), request.POST.get('employee_id'), request.POST.get('amount'), request.POST.get('pay_start'), request.POST.get('pay_end'), request.POST.get('date_given'))
         if error is None:
-            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
+            message = "Successfully created entry for bonus %s" % request.POST.get('bonus_id')
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_bonus.html', {'error': False,}) 
         else:
@@ -495,7 +495,7 @@ def createPayPeriodSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
         employer_id = request.session['email']
-        error = web_utils.addPayPeriod(employer_id, request.POST.get('pay_start'), request.POST.get('pay_end'), request.FILES['timecardData'])
+        error = web_utils.addPayPeriod(employer_id, request.POST.get('pay_start'), request.POST.get('pay_end'), request.FILES.get('timecardData'))
         if error is None:
             message = "Successfully submitted timecard data"
             messages.add_message(request, messages.INFO, message)
