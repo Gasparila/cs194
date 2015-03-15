@@ -30,40 +30,12 @@
                 <ul class="nav" id="side-menu">
                     <li class="nav-header">
                         <div class="dropdown profile-element"> <span>
-                            <img alt="image" class="img-circle" src="{% static 'img/walli.jpg'%}" />
                              </span>
-                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
                             <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">Naveen Krishnamurthi</strong>
-                             </span> <span class="text-muted text-xs block">CEO <b class="caret"></b></span> </span> </a>
-                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                                <li><a href="/">Profile</a></li>
-                                <li><a href="/">Contacts</a></li>
-                                <li><a href="/">Mailbox</a></li>
-                                <li class="divider"></li>
-                                <li><a href="/logout">Logout</a></li>
-                            </ul>
-                        </div>
-                        <div class="logo-element">
-                            Microsoft
-                        </div>
                     </li>
                     <li>
                         <a href="/"><i class="fa fa-th-large"></i> <span class="nav-label">Home</span></a
                         </li>
-                    <li>
-                        <a href="#"><i class="fa fa-line-chart"></i> <span class="nav-label">Revenues</span><span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li><a href="/">Stanford</a></li>
-                            <li><a href="/">Los Angeles</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="/"><i class="fa fa-bar-chart-o"></i> <span class="nav-label">Costs </span><span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li><a href="/">Stanford</a></li>
-                            <li><a href="/">Los Angeles</a></li>
-                        </ul>
-                    </li>
                     <li class="active">
                         <a href="/"><i class="fa fa-plus"></i> <span class="nav-label">Add Data </span><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
@@ -86,112 +58,7 @@
         <div id="page-wrapper" class="gray-bg">
         <div class="row border-bottom">
         <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
-        <div class="navbar-header">
-            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
-            <form role="search" class="navbar-form-custom" method="post" action="search_results.html">
-                <div class="form-group">
-                    <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">
-                </div>
-            </form>
-        </div>
             <ul class="nav navbar-top-links navbar-right">
-                <li class="dropdown">
-                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
-                        <i class="fa fa-envelope"></i>  <span class="label label-warning">16</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-messages">
-                        <li>
-                            <div class="dropdown-messages-box">
-                                <a href="profile.html" class="pull-left">
-                                    <img alt="image" class="img-circle" src="img/a7.jpg">
-                                </a>
-                                <div class="media-body">
-                                    <small class="pull-right">46h ago</small>
-                                    <strong>Mike Loreipsum</strong> started following <strong>Monica Smith</strong>. <br>
-                                    <small class="text-muted">3 days ago at 7:58 pm - 10.06.2014</small>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <div class="dropdown-messages-box">
-                                <a href="profile.html" class="pull-left">
-                                    <img alt="image" class="img-circle" src="img/a4.jpg">
-                                </a>
-                                <div class="media-body ">
-                                    <small class="pull-right text-navy">5h ago</small>
-                                    <strong>Chris Johnatan Overtunk</strong> started following <strong>Monica Smith</strong>. <br>
-                                    <small class="text-muted">Yesterday 1:21 pm - 11.06.2014</small>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <div class="dropdown-messages-box">
-                                <a href="profile.html" class="pull-left">
-                                    <img alt="image" class="img-circle" src="img/profile.jpg">
-                                </a>
-                                <div class="media-body ">
-                                    <small class="pull-right">23h ago</small>
-                                    <strong>Monica Smith</strong> love <strong>Kim Smith</strong>. <br>
-                                    <small class="text-muted">2 days ago at 2:30 am - 11.06.2014</small>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <div class="text-center link-block">
-                                <a href="mailbox.html">
-                                    <i class="fa fa-envelope"></i> <strong>Read All Messages</strong>
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
-                        <i class="fa fa-bell"></i>  <span class="label label-primary">8</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-alerts">
-                        <li>
-                            <a href="mailbox.html">
-                                <div>
-                                    <i class="fa fa-envelope fa-fw"></i> You have 16 messages
-                                    <span class="pull-right text-muted small">4 minutes ago</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="profile.html">
-                                <div>
-                                    <i class="fa fa-twitter fa-fw"></i> 3 New Followers
-                                    <span class="pull-right text-muted small">12 minutes ago</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="grid_options.html">
-                                <div>
-                                    <i class="fa fa-upload fa-fw"></i> Server Rebooted
-                                    <span class="pull-right text-muted small">4 minutes ago</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <div class="text-center link-block">
-                                <a href="notifications.html">
-                                    <strong>See All Alerts</strong>
-                                    <i class="fa fa-angle-right"></i>
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                </li>
-
-
                 <li>
                     <a href="/logout">
                         <i class="fa fa-sign-out"></i> Log out
@@ -218,20 +85,33 @@
                                 <h5>Create Pay Period <small> Enter pay period data below.</small></h5>
                             </div>
                             <div class="ibox-content">
-                                <form action="/employeeSearchResults" method="get" class="form-horizontal">
-                                    <div class="form-group"><label class="col-sm-2 control-label">Employee ID</label>
-                                        <div class="col-sm-10"><input name="employee_id" type="text" class="form-control"> <span class="help-block m-b-none">Leave empty to return all employees.</span>
+                                {% for message in messages %}
+                                    {% if error %}
+                                        <div class="alert alert-danger alert-dismissable">
+                                    {% else %}
+                                        <div class="alert alert-success alert-dismissable">
+                                    {% endif %}
+                                            <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                                            {{message}}.
+                                        </div>
+                                {% endfor %}
+                                <form action="/createPayPeriodSubmit/" enctype="multipart/form-data" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <div class="form-group"><label class="col-sm-2 control-label">Pay Start</label>
+                                        <div class="col-sm-10"><input name="pay_start" type="text" class="form-control"> 
+                                            <span class="help-block m-b-none">e.g. 12/1/15</span>
                                         </div>
                                     </div>
                                     <div class="hr-line-dashed"></div>
-                                    <div class="form-group"><label class="col-sm-2 control-label">Pay Period</label>
-                                        <div class="col-sm-10"><input type="text" class="form-control"> <span class="help-block m-b-none">Enter the start date and end date.</span>
+                                    <div class="form-group"><label class="col-sm-2 control-label">Pay End</label>
+                                        <div class="col-sm-10"><input name="pay_end" type="text" class="form-control"> 
+                                            <span class="help-block m-b-none">e.g. 12/15/15</span>
                                         </div>
                                     </div>
                                     <div class="hr-line-dashed"></div>
-                                    <div class="form-group"><label class="col-sm-2 control-label">Job Title</label>
-                                        <div class="col-sm-10"><input type="text" class="form-control"> 
-                                            <span class="help-block m-b-none">Results will be filtered for the given job title.</span>
+                                    <div class="form-group"><label class="col-sm-2 control-label">Timcard Data</label>
+                                        <div class="fileUpload btn">
+                                                <input name="timecardData" type="file" class="upload" />
                                         </div>
                                     </div>
                                     <div class="hr-line-dashed"></div>
@@ -247,9 +127,6 @@
                 </div>
             </div>
         <div class="footer">
-            <div class="pull-right">
-                10GB of <strong>250GB</strong> Free.
-            </div>
             <div>
                 <strong>Copyright</strong> EasyPayroll &copy; 2014-2015
             </div>

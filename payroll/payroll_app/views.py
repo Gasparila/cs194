@@ -5,6 +5,7 @@ from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from decimal import *
 from tempfile import *
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
@@ -83,26 +84,30 @@ def employerCSVBuilder(start_time, end_time, employer_id, employee_name):
 
 def getEmployeeSearchResults(request):
     employer_id = request.session['email'] 
-    employee_id = request.GET['employee_id']
+    employee_id = request.POST.get('employee_id')
     employees = Employee.objects.all().filter(employer_id = employer_id);
     if not str(employee_id).isspace() and str(employee_id):
         employees = employees.filter(employee_id = employee_id);
-    employee_name = request.GET['employee_name']
+    employee_name = request.POST.get('employee_name')
     if not str(employee_name).isspace() and str(employee_name):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
-        start = request.GET['start_date']
-        start_date = datetime.datetime.strptime(str(start), "%Y-%m-%d")
+        start = request.POST.get('start_date')
+        start_date = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
-        end = request.GET['end_date']
-        end_date = datetime.datetime.strptime(str(end), "%Y-%m-%d")
+        end = request.POST.get('end_date')
+        end_date = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_date = datetime.datetime.today()
+    #Bug Fix: Make start and end dates timezone aware to allow comparisons
+    start_date = timezone.make_aware(start_date, timezone.get_default_timezone())
+    end_date = timezone.make_aware(end_date, timezone.get_default_timezone())
+
     payperiod1 = PayPeriod.objects.all().filter(pay_start__gte = start_date)
     payperiod1 = payperiod1.filter(pay_end__lte = end_date)
-    
+
     jobs = Job.objects.all()
 
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
@@ -112,13 +117,12 @@ def getEmployeeSearchResults(request):
 
 def getSingleEmployeeResult(request):
     employer_id = request.session['email']
-    print employer_id 
-    employee_id = request.GET['employee_id']
-    job_id = request.GET['job_id']
-    start = request.GET['start']
+    job_id = request.GET.get('job_id')
+    start = request.GET.get('start')
     start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
-    end = request.GET['end']
+    end = request.GET.get('end')
     end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
+    employee_id = request.GET.get('employee_id')
     employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
@@ -138,12 +142,12 @@ def getPayrollCSV(request):
         employee_id = "*"
     try:
         start = json_data['start']
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = json_data['end']
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_time = datetime.datetime.today()
 
@@ -182,12 +186,12 @@ def getPayrollData(request):
         employee_id = "*"
     try:
         start = json_data['start']
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%Y")
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = json_data['end']
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%Y")
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_time = datetime.datetime.today()
     try:
@@ -451,11 +455,10 @@ def employerBuilder(start_time, end_time, employer_id):
 def createEmployeeSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addEmployee(employer_id, employer_key, request.GET.get('employee_id'),request.GET.get('employee_name'), request.GET.get('employee_address'), request.GET.get('vacation_hours'), request.GET.get('vacation_pay_rate'), request.GET.get('sick_hours'), request.GET.get('sick_pay_rate'), request.GET.get('vacation_accrual_rate'))
+        employer_id = request.session['email']
+        error = web_utils.addEmployee(employer_id, request.POST.get('employee_id'),request.POST.get('employee_name'), request.POST.get('employee_address'), request.POST.get('vacation_hours'), request.POST.get('vacation_pay_rate'), request.POST.get('sick_hours'), request.POST.get('sick_pay_rate'), request.POST.get('vacation_accrual_rate'))
         if error is None:
-            message = "Successfully created entry for %s" % request.GET['employee_name']
+            message = "Successfully created entry for %s" % request.POST['employee_name']
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_employee.html', {'error': False,}) 
         else:
@@ -465,11 +468,10 @@ def createEmployeeSubmit(request):
 def createJobSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addJob(employer_id, employer_key, request.GET.get('job_id'), request.GET.get('employee_id'), request.GET.get('job_title'), request.GET.get('base_rate'), request.GET.get('incremental_rate_one'), request.GET.get('incremental_rate_two'))
+        employer_id = request.session['email']
+        error = web_utils.addJob(employer_id, request.POST.get('job_id'), request.POST.get('employee_id'), request.POST.get('job_title'), request.POST.get('base_rate'), request.POST.get('incremental_rate_one'), request.POST.get('incremental_rate_two'))
         if error is None:
-            message = "Successfully created entry for %s" % request.GET.get('job_title')
+            message = "Successfully created entry for %s" % request.POST.get('job_title')
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_job.html', {'error': False,}) 
         else:
@@ -479,16 +481,28 @@ def createJobSubmit(request):
 def createBonusSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        employer_id = "8675-309"
-        employer_key = "private_key"
-        error = web_utils.addBonus(employer_id, employer_key, request.GET.get('bonus_id'), request.GET.get('employee_id'), request.GET.get('amount'), request.GET.get('pay_start'), request.GET.get('pay_end'), request.GET.get('date_given'))
+        employer_id = request.session['email']
+        error = web_utils.addBonus(employer_id, request.POST.get('bonus_id'), request.POST.get('employee_id'), request.POST.get('amount'), request.POST.get('pay_start'), request.POST.get('pay_end'), request.POST.get('date_given'))
         if error is None:
-            message = "Successfully created entry for bonus %s" % request.GET.get('bonus_id')
+            message = "Successfully created entry for bonus %s" % request.POST.get('bonus_id')
             messages.add_message(request, messages.INFO, message)
             return render(request, 'create_bonus.html', {'error': False,}) 
         else:
             messages.add_message(request, messages.INFO, error)
             return render(request, 'create_bonus.html', {'error': True,})
+
+def createPayPeriodSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = request.session['email']
+        error = web_utils.addPayPeriod(employer_id, request.POST.get('pay_start'), request.POST.get('pay_end'), request.FILES.get('timecardData'))
+        if error is None:
+            message = "Successfully submitted timecard data"
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_pay_period.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_pay_period.html', {'error': True,})
 
 def createEmployee(request):
     if not request.user.is_authenticated(): return redirect('/login')   
