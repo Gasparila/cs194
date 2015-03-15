@@ -84,20 +84,20 @@ def employerCSVBuilder(start_time, end_time, employer_id, employee_name):
 
 def getEmployeeSearchResults(request):
     employer_id = request.session['email'] 
-    employee_id = request.GET['employee_id']
+    employee_id = request.POST.get('employee_id')
     employees = Employee.objects.all().filter(employer_id = employer_id);
     if not str(employee_id).isspace() and str(employee_id):
         employees = employees.filter(employee_id = employee_id);
-    employee_name = request.GET['employee_name']
+    employee_name = request.POST.get('employee_name')
     if not str(employee_name).isspace() and str(employee_name):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
-        start = request.GET['start_date']
+        start = request.POST.get('start_date')
         start_date = datetime.datetime.strptime(str(start), "%m/%d/%y")
     except:
         start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
-        end = request.GET['end_date']
+        end = request.POST.get('end_date')
         end_date = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_date = datetime.datetime.today()
@@ -117,12 +117,12 @@ def getEmployeeSearchResults(request):
 
 def getSingleEmployeeResult(request):
     employer_id = request.session['email']
-    job_id = request.GET['job_id']
-    start = request.GET['start']
+    job_id = request.GET.get('job_id')
+    start = request.GET.get('start')
     start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
-    end = request.GET['end']
+    end = request.GET.get('end')
     end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
-    employee_id = request.GET['employee_id']
+    employee_id = request.GET.get('employee_id')
     employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
