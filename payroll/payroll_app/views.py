@@ -487,6 +487,19 @@ def createBonusSubmit(request):
             messages.add_message(request, messages.INFO, error)
             return render(request, 'create_bonus.html', {'error': True,})
 
+def createPayPeriodSubmit(request):
+    if not request.user.is_authenticated(): return redirect('/login')   
+    else:
+        employer_id = request.session['email']
+        error = web_utils.addPayPeriod(employer_id, request.POST.get('pay_start'), request.POST.get('pay_end'), request.FILES['timecardData'])
+        if error is None:
+            message = "Successfully submitted timecard data"
+            messages.add_message(request, messages.INFO, message)
+            return render(request, 'create_pay_period.html', {'error': False,}) 
+        else:
+            messages.add_message(request, messages.INFO, error)
+            return render(request, 'create_pay_period.html', {'error': True,})
+
 def createEmployee(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:

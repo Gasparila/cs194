@@ -1,6 +1,7 @@
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
 import auth_utils
 import datetime
+import excel_utils
 
 def addEmployee(employer_id, employee_id, employee_name, address, vacation_hours=None, vacation_pay_rate=None, sick_hours=None, sick_pay_rate=None, vacation_accrual_rate=None):     
     if (employer_id or '') == '': return "Employer ID is required"
@@ -49,6 +50,8 @@ def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end
     if (bonus_id or '') == '': return "Bonus ID is required"
     if (employee_id or '') == '': return "Employee ID is required"
     if (amount or '') == '': return "Amount is required"
+    if not Employee.objects.filter(employee_id = employee_id).exists():
+        return "There is no employee with id %s" % employee_id
     try:
         pay_start = datetime.datetime.strptime(pay_start, "%m/%d/%y")
     except:
@@ -66,6 +69,21 @@ def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end
     bonus = BonusPay(bonus_id=bonus_id, employee_id=employee_id, amount=amount, pay_start=pay_start, pay_end=pay_end, date_given=date_given)
     bonus.save()
     return None
+
+def addPayPeriod(employer_id, pay_start, pay_end, timecard_data):
+    if (employer_id or '') == '': return "Employer ID is required"
+    if (pay_start or '') == '': return "Pay Start is required"
+    if (pay_end or '') == '': return "Pay End is required"
+    if (timecard_data or '') == '': return "Timecard Data is required"
+    try:
+        pay_start = datetime.datetime.strptime(pay_start, "%m/%d/%y")
+    except:
+        return "Invalid start date"
+    try: 
+        pay_end = datetime.datetime.strptime(pay_end, "%m/%d/%y")
+    except:    
+        return "Invalid end date"
+    return excel_utils.add_timecard_data(employer_id, pay_start, pay_end, timecard_data)
 
 def addEmployer(employer_id, employer_name, address, hash_key):
     #consider deleting the following
