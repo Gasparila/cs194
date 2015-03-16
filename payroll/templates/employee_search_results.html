@@ -64,6 +64,9 @@
         <div id="page-wrapper" class="gray-bg">
         <div class="row border-bottom">
         <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+            </div>
             <ul class="nav navbar-top-links navbar-right">
                 <li>
                     <a href="/logout">
@@ -221,6 +224,8 @@
                     </table>
                     {% endif %}
                     {% endif %}
+                    <button class="btn btn-success fileDownloadSimpleRichExperience" type="button" id="pdf-download-button"><i class="fa fa-download"></i>&nbsp;&nbsp;<span class="bold">.pdf</span></button>
+                    <button class="btn btn-info" type="button"><i class="fa fa-download"></i>&nbsp;&nbsp;<span class="bold">.csv</span></button>
                     </div>
                 </div>
             </div>
@@ -286,7 +291,7 @@
                 responsive: true,
                 "dom": 'T<"clear">lfrtip',
                 "tableTools": {
-                    "sSwfPath": "js/plugins/dataTables/swf/copy_csv_xls_pdf.swf"
+                    "sSwfPath": "{% static 'js/plugins/dataTables/swf/copy_csv_xls_pdf.swf' %}"
                 }
             });
 
@@ -324,23 +329,19 @@
         }
     </script>
 
+
     <script src="{% static 'js/jquery.fileDownload.js' %}"></script>
     <script>
-        $(function() {
-            $(document).on("click", "a.fileDownloadSimpleRichExperience", function() {
-                $.fileDownload($(this).attr('href'), {
-                    preparingMessageHtml: "We are preparing your report, please wait...",
-                    failMessageHtml: "There was a problem generating your report, please try again."
+        var strData = {'employer_id':"{{employer_id}}", 'employee_id':"{{employee_id}}", 'employee_name': "{{employee_name}}", 'start':"{{start}}", 'end':"{{end}}"}
+        $("#pdf-download-button").click(function(){
+                $.fileDownload("/getPayrollDataWeb", {
+                    data: strData
                 });
-                    return false; //this is critical to stop the click event which will trigger a normal file download!
-            });
+            return false; //this is critical to stop the click event which will trigger a normal file download!
         });
     </script>
-    <a href="http://jqueryfiledownload.apphb.com/FileDownload/DownloadReport/0" class="fileDownloadSimpleRichExperience">Report0.pdf</a>
-
-
 <style>
-    #ToolTables_DataTables_Table_0_0, #ToolTables_DataTables_Table_0_4{
+    .DTTT_container{
         display: none;
     }
 

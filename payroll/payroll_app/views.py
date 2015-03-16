@@ -112,7 +112,7 @@ def getEmployeeSearchResults(request):
 
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date+ datetime.timedelta(days=1));
-    return render(request, 'employee_search_results.html', {'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
+    return render(request, 'employee_search_results.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':employee_name, 'start':start, 'end':end, 'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
 def getSingleEmployeeResult(request):
@@ -169,9 +169,54 @@ def getPayrollCSV(request):
                 csv_contents = employeeCSVBuilder(start_time, end_time, employee_id, employer_id);
             else:
                 csv_contents = employerCSVBuilder(start_time, end_time, employer_id, employee_name);
-
             return HttpResponse(csv_contents, content_type='text/csv')
     return HttpResponse(csv_contents, content_type='text/csv')
+
+# Create your views here
+def getPayrollDataWeb(request):
+    pdf_contents ="";
+    employer_id = request.session['email']
+    employee_id = request.GET.get('employee_id')
+    if employee_id is None or str(employee_id).isspace() or employee_id == "": employee_id = "*"
+    employee_name = request.GET.get('employee_name')
+    if employee_name is None or str(employee_id).isspace(): employee_name = ""
+    try:
+        start = request.GET.get('start')
+        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
+    except:
+        start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
+    try:
+        end = request.GET.get('end')
+        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
+    except:
+        end_time = datetime.datetime.today()
+
+    tex_name =  "./" + employer_id + "_" + employee_id + ".tex" 
+    pdf_name = employer_id + "_" + employee_id + ".pdf"
+    tex = open( tex_name,'w')
+    if pdf_contents == "":
+        employer = Employer.objects.get(employer_id = employer_id)
+        if employee_id != "*":
+            emplyee_tex = employeeBuilder( start_time, end_time, employee_id, employer_id);
+            tex.write(emplyee_tex);
+        else:
+            employer_tex = employerBuilder(start_time, end_time, employer_id);
+            tex.write(employer_tex);
+
+    else:
+        tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
+        tex_file += pdf_contents + "\n\\end{document}";
+        tex.write(tex_file);
+    
+    tex.close();
+    call("pdflatex -output-directory payroll_app/static/pdf " + tex_name, shell=True)
+    f = open("payroll_app/static/pdf/" + pdf_name , 'r')
+    pdf_contents = f.read()
+    f.close()
+    response = HttpResponse(pdf_contents, content_type='application/pdf')
+    response['Content-Disposition'] = ('attachment; filename="'+pdf_name+ '"')
+    return response 
+
 
 # Create your views here
 @csrf_exempt
