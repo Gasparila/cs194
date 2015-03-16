@@ -583,7 +583,7 @@ def index(request):
             request.session['email']=email
             company_name = Employer.objects.get(employer_id = email).employer_name
             request.session['company_name'] = company_name
-            return render(request, 'index.html', {'name' : request.session.get('company_name')})
+            return render_index(request)
         else:
             messages.add_message(request, messages.INFO, 'Inactive user account')
             return redirect('/login')           
