@@ -656,6 +656,7 @@ def registerSubmit(request):
         user = auth.authenticate(username=email, password=password)
         auth.login(request, user)
         request.session['email']=email
+        request.session['company_name'] = company_name
         return redirect('/')
     else:
         messages.add_message(request, messages.INFO, error)
