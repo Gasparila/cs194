@@ -112,7 +112,7 @@ def getEmployeeSearchResults(request):
 
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date+ datetime.timedelta(days=1));
-    return render(request, 'employee_search_results.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':employee_name, 'start':start, 'end':end, 'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
+    return render(request, 'employee_search_results.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':employee_name, 'start':start, 'end':end, 'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
 def getSingleEmployeeResult(request):
@@ -128,7 +128,7 @@ def getSingleEmployeeResult(request):
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
-    return render(request, 'single_employee_result.html', {'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
+    return render(request, 'single_employee_result.html', {'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
 
 @csrf_exempt
 def getPayrollCSV(request):
@@ -431,7 +431,7 @@ def employeeBuilder( start_time, end_time, employee_id, employer_id):
 def employeeSearch(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        return render(request, 'employee_search.html', {})  
+        return render(request, 'employee_search.html', {'name' : request.session.get('company_name')})  
 
 def employerBuilder(start_time, end_time, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
@@ -505,10 +505,10 @@ def createEmployeeSubmit(request):
         if error is None:
             message = "Successfully created entry for %s" % request.POST['employee_name']
             messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_employee.html', {'error': False,}) 
+            return render(request, 'create_employee.html', {'name' : request.session.get('company_name'), 'error': False,}) 
         else:
             messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_employee.html', {'error': True,}) 
+            return render(request, 'create_employee.html', {'name' : request.session.get('company_name'), 'error': True,}) 
 
 def createJobSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
@@ -518,10 +518,10 @@ def createJobSubmit(request):
         if error is None:
             message = "Successfully created entry for %s" % request.POST.get('job_title')
             messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_job.html', {'error': False,}) 
+            return render(request, 'create_job.html', {'name' : request.session.get('company_name'), 'error': False,}) 
         else:
             messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_job.html', {'error': True,})
+            return render(request, 'create_job.html', {'name' : request.session.get('company_name'), 'error': True,})
 
 def createBonusSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
@@ -531,10 +531,10 @@ def createBonusSubmit(request):
         if error is None:
             message = "Successfully created entry for bonus %s" % request.POST.get('bonus_id')
             messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_bonus.html', {'error': False,}) 
+            return render(request, 'create_bonus.html', {'name' : request.session.get('company_name'), 'error': False,}) 
         else:
             messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_bonus.html', {'error': True,})
+            return render(request, 'create_bonus.html', {'name' : request.session.get('company_name'), 'error': True,})
 
 def createPayPeriodSubmit(request):
     if not request.user.is_authenticated(): return redirect('/login')   
@@ -544,34 +544,80 @@ def createPayPeriodSubmit(request):
         if error is None:
             message = "Successfully submitted timecard data"
             messages.add_message(request, messages.INFO, message)
-            return render(request, 'create_pay_period.html', {'error': False,}) 
+            return render(request, 'create_pay_period.html', {'name' : request.session.get('company_name'), 'error': False,}) 
         else:
             messages.add_message(request, messages.INFO, error)
-            return render(request, 'create_pay_period.html', {'error': True,})
+            return render(request, 'create_pay_period.html', {'name' : request.session.get('company_name'), 'error': True,})
 
 def createEmployee(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        return render(request, 'create_employee.html', {}) 
+        return render(request, 'create_employee.html', {'name' : request.session.get('company_name')}) 
 def createJob(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        return render(request, 'create_job.html', {}) 
+        return render(request, 'create_job.html', {'name' : request.session.get('company_name')}) 
 
 def createBonus(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        return render(request, 'create_bonus.html', {}) 
+        return render(request, 'create_bonus.html', {'name' : request.session.get('company_name')}) 
 
 def createPayPeriod(request):
     if not request.user.is_authenticated(): return redirect('/login')   
     else:
-        return render(request, 'create_pay_period.html', {}) 
+        return render(request, 'create_pay_period.html', {'name' : request.session.get('company_name')}) 
+
+def get_total(pay_periods):
+    total = 0
+    for pay_period in pay_periods:
+        job = Job.objects.get(job_id = pay_period.job_id)
+        base_pay =  pay_period.hours * job.base_rate;
+        total += base_pay;
+        if pay_period.overtime_hours > 0: 
+            overtime_pay =  pay_period.overtime_hours * (job.base_rate * Decimal(1.5));
+            total += overtime_pay
+        if pay_period.incremental_hours_1 > 0:
+            incremental_pay1 =  pay_period.incremental_hours_1 * (job.incremental_hours_1);
+            total += incremental_pay1
+        if pay_period.incremental_hours_2 > 0:
+            incremental_pay2 =  pay_period.incremental_hours_2 * (job.incremental_hours_2);
+            total += incremental_pay2
+        if pay_period.vacation_hours_spent > 0:
+            vacation_pay =  pay_period.vacation_hours_spent * (job.base_rate);
+            total += vacation_pay
+        if pay_period.sick_hours_spent > 0:
+            sick_pay =  pay_period.sick_hours_spent * (job.base_rate);
+            total += sick_pay
+        if pay_period.holiday_hours_spent > 0:
+            holiday_pay =  pay_period.holiday_hours_spent * (job.base_rate);
+            total += holiday_pay                        
+    return total
+
+def render_index(request):
+    cur_month =  datetime.datetime.now().month
+    cur_year =  datetime.datetime.now().year
+    months = [datetime.datetime.now()]
+    for i in range(12): #loop through the past year
+        month = (cur_month - i) % 12
+        if month == 0:
+            month = 12
+            cur_year -= 1
+        date = datetime.datetime.strptime(str(month) + '/1/' + str(cur_year), "%m/%d/%Y")
+        date = timezone.make_aware(date, timezone.get_default_timezone())
+        months.append(date)
+    months.reverse() #Want most recent time last
+
+    pay_periods_gen =  (PayPeriod.objects.all().filter(pay_start__gte = months[i]).filter(pay_end__lte = months[i + 1]) for i in range(12))
+    sums = []
+    for i, pay in enumerate(pay_periods_gen):
+        sums.append([str(months[i]).split()[0], get_total(pay)]) #split to get yyyy-mm-dd
+    return render(request, 'index.html', {'name' : request.session.get('company_name'), 'monthly_total' : sums})
 
 # Create your views here.
 def index(request):
     #If the user is logged in, show them the dashboard
-    if request.user.is_authenticated(): return render(request, 'index.html', {})
+    if request.user.is_authenticated(): return render_index(request)
     #Try logging them in
     email = request.POST.get('email')
     password = request.POST.get('password')
@@ -580,7 +626,9 @@ def index(request):
         if user.is_active:
             auth.login(request, user)
             request.session['email']=email
-            return render(request, 'index.html', {})
+            company_name = Employer.objects.get(employer_id = email).employer_name
+            request.session['company_name'] = company_name
+            return render_index(request)
         else:
             messages.add_message(request, messages.INFO, 'Inactive user account')
             return redirect('/login')           
