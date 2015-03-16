@@ -32,6 +32,8 @@ urlpatterns = patterns('payroll_app.views',
     url(r'^createJobSubmit/$', 'createJobSubmit'),
     url(r'^createBonusSubmit/$', 'createBonusSubmit'),
     url(r'^createPayPeriodSubmit/$', 'createPayPeriodSubmit'),
-    url(r'^getPayrollDataWeb/$', 'getPayrollDataWeb')
-    
+    url(r'^getPayrollDataWeb/$', 'getPayrollDataWeb'),
+    url(r'^getPayrollCSVWeb/$', 'getPayrollCSVWeb')
+
+
 )
