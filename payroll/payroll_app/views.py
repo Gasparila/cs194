@@ -523,10 +523,36 @@ def createPayPeriod(request):
     else:
         return render(request, 'create_pay_period.html', {}) 
 
+def get_total(pay_periods):
+    total = 0
+    for pay_period in pay_periods:
+        total += 1
+    return total
+
+def render_index(request):
+    cur_month =  datetime.datetime.now().month
+    cur_year =  datetime.datetime.now().year
+    months = [datetime.datetime.now()]
+    for i in range(12): #loop through the past year
+        month = (cur_month - i) % 12
+        if month == 0:
+            month = 12
+            cur_year -= 1
+        date = datetime.datetime.strptime(str(month) + '/1/' + str(cur_year), "%m/%d/%Y")
+        date = timezone.make_aware(date, timezone.get_default_timezone())
+        months.append(date)
+    months.reverse() #Want most recent time last
+
+    pay_periods_gen =  (PayPeriod.objects.all().filter(pay_start__gte = months[i]).filter(pay_end__lte = months[i + 1]) for i in range(12))
+    sums = []
+    for pay in pay_periods_gen:
+        sums.append(get_total(pay))
+    return render(request, 'index.html', {'monthly_total' : sums})
+
 # Create your views here.
 def index(request):
     #If the user is logged in, show them the dashboard
-    if request.user.is_authenticated(): return render(request, 'index.html', {})
+    if request.user.is_authenticated(): return render_index(request)
     #Try logging them in
     email = request.POST.get('email')
     password = request.POST.get('password')
