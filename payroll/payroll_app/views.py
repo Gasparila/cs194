@@ -565,9 +565,8 @@ def render_index(request):
 
     pay_periods_gen =  (PayPeriod.objects.all().filter(pay_start__gte = months[i]).filter(pay_end__lte = months[i + 1]) for i in range(12))
     sums = []
-    for pay in pay_periods_gen:
-        sums.append(get_total(pay))
-    print sums
+    for i, pay in enumerate(pay_periods_gen):
+        sums.append([str(months[i]).split()[0], get_total(pay)]) #split to get yyyy-mm-dd
     return render(request, 'index.html', {'monthly_total' : sums})
 
 # Create your views here.
