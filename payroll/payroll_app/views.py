@@ -526,7 +526,27 @@ def createPayPeriod(request):
 def get_total(pay_periods):
     total = 0
     for pay_period in pay_periods:
-        total += 1
+        job = Job.objects.get(job_id = pay_period.job_id)
+        base_pay =  pay_period.hours * job.base_rate;
+        total += base_pay;
+        if pay_period.overtime_hours > 0: 
+            overtime_pay =  pay_period.overtime_hours * (job.base_rate * Decimal(1.5));
+            total += overtime_pay
+        if pay_period.incremental_hours_1 > 0:
+            incremental_pay1 =  pay_period.incremental_hours_1 * (job.incremental_hours_1);
+            total += incremental_pay1
+        if pay_period.incremental_hours_2 > 0:
+            incremental_pay2 =  pay_period.incremental_hours_2 * (job.incremental_hours_2);
+            total += incremental_pay2
+        if pay_period.vacation_hours_spent > 0:
+            vacation_pay =  pay_period.vacation_hours_spent * (job.base_rate);
+            total += vacation_pay
+        if pay_period.sick_hours_spent > 0:
+            sick_pay =  pay_period.sick_hours_spent * (job.base_rate);
+            total += sick_pay
+        if pay_period.holiday_hours_spent > 0:
+            holiday_pay =  pay_period.holiday_hours_spent * (job.base_rate);
+            total += holiday_pay                        
     return total
 
 def render_index(request):
@@ -547,6 +567,7 @@ def render_index(request):
     sums = []
     for pay in pay_periods_gen:
         sums.append(get_total(pay))
+    print sums
     return render(request, 'index.html', {'monthly_total' : sums})
 
 # Create your views here.
