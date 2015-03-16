@@ -160,7 +160,7 @@ def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_n
         tex_file += pdf_contents + "\n\\end{document}";
         tex.write(tex_file); 
     tex.close();
-    call("pdflatex -output-directory tmp/pdf/ " + tex_name, shell=True)
+    call("pdflatex -output-directory tmp/pdf/ " + "tmp/"+tex_name, shell=True)
     f = open("tmp/pdf/" + pdf_name , 'r')
     pdf_contents = f.read()
     f.close()
