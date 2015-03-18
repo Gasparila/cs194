@@ -68,7 +68,7 @@ def getSingleEmployeeResult(request):
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
-    return render(request, 'single_employee_result.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':"", 'start':str(start_date.strftime('%m/%d/%y')), 'end':str(end_date.strftime('%m/%d/%y')), 'name' : request.session.get('company_name'),  'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
+    return render(request, 'single_employee_result.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':"", 'start':str(start_date.strftime('%Y-%m-%d')), 'end':str(end_date.strftime('%Y-%m-%d')), 'name' : request.session.get('company_name'),  'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
 
 # Function that is called to download the CSV of the search made from the website. When called, this function automatically downloads the csv
 def getPayrollCSVWeb(request):
@@ -80,12 +80,12 @@ def getPayrollCSVWeb(request):
     if employee_name is None or str(employee_id).isspace(): employee_name = ""
     try:
         start = request.GET.get('start')
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
+        start_time = datetime.datetime.strptime(str(start), "%Y-%m-%d")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = request.GET.get('end')
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
+        end_time = datetime.datetime.strptime(str(end), "%Y-%m-%d")
     except:
         end_time = datetime.datetime.today()
     csv_name = employer_id + "_" + employee_id + ".csv"
@@ -97,6 +97,7 @@ def getPayrollCSVWeb(request):
 # Curl command to get the csv of a certain payperiod search. If the employer id or the employer key are not present or are not valid
 # the CSV will show the error. All other inputs (Employee ID, start date, end date, and employee name) are optional. The inputs are 
 # assumed to be in json. For examples please look in the curl file.  
+@csrf_exempt
 def getPayrollCSV(request):
     json_data = json.loads(request.body)
     csv_contents =""
@@ -141,12 +142,12 @@ def getPayrollDataWeb(request):
     if employee_name is None or str(employee_id).isspace(): employee_name = ""
     try:
         start = request.GET.get('start')
-        start_time = datetime.datetime.strptime(str(start), "%m/%d/%y")
+        start_time = datetime.datetime.strptime(str(start), "%Y-%m-%d")
     except:
         start_time = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = request.GET.get('end')
-        end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
+        end_time = datetime.datetime.strptime(str(end), "%Y-%m-%d")
     except:
         end_time = datetime.datetime.today()
     pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
