@@ -84,10 +84,12 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
     return tex_file
 
 # This function takes in the inputs and creates a latex file that contains an overview of the payroll information of all an employers employees between the start and end time. 
-def employerBuilder(start_time, end_time, employer_id):
+def employerBuilder(start_time, end_time, employer_id, employee_name):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
     employees = Employee.objects.all().filter(employer_id = employer_id)
+    if not str(employee_name).isspace() and str(employee_name):
+        employees = employees.filter(employee_name__icontains = employee_name);
     employer_info = "To: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
     tex_file += employer_info
     table = "| l | l | l | l | l | l |"
@@ -151,7 +153,7 @@ def employerBuilder(start_time, end_time, employer_id):
 # payperiods, and calls employerBuilder to get a latex version of that file. Otherwise it is assumed that they are looking for one particular employee so it will 
 # call employeeBuilder to get a latex file of all the payperiods between the start and end date of a certain employee. Then it converts that file into a pdf and 
 # returns the pdf data.
-def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name):
+def buildPDF(employer_id, employee_id, employee_name, start_time, end_time, pdf_contents, pdf_name):
     tex_name = employer_id.strip() + "_" + employee_id.strip() + ".tex" 
     tex = open("tmp/"+tex_name,'w')
     if pdf_contents == "":
@@ -160,7 +162,7 @@ def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_n
             employee_tex = employeeBuilder(start_time, end_time, employee_id, employer_id);
             tex.write(employee_tex);
         else:
-            employer_tex = employerBuilder(start_time, end_time, employer_id);
+            employer_tex = employerBuilder(start_time, end_time, employer_id, employee_name);
             tex.write(employer_tex);
     else:
         tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"

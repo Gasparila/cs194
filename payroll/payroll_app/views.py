@@ -29,7 +29,7 @@ def getEmployeeSearchResults(request):
     if not str(employee_id).isspace() and str(employee_id):
         employees = employees.filter(employee_id = employee_id);
     employee_name = request.POST.get('employee_name')
-    if not str(employee_name).isspace() and str(employee_name):
+    if not str(employee_name).isspace() and str(employee_name) and str(employee_id).isspace() and not str(employee_id):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
         start = request.POST.get('start_date')
@@ -129,7 +129,7 @@ def getPayrollCSV(request):
     if not auth_utils.check_employer(employer_id, employer_key):
         csv_contents = "Invalid Employer ID/Key";
     csv_name = employer_id + "_" + employee_id + ".csv"
-    csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name)
+    csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name, employee_name)
     return HttpResponse(csv_contents, content_type='text/csv')
 
 # Function that is called to download the pdf of the search made from the website. When called, this function automatically downloads the csv
@@ -151,7 +151,7 @@ def getPayrollDataWeb(request):
     except:
         end_time = datetime.datetime.today()
     pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
-    pdf_contents = file_utils.buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name)
+    pdf_contents = file_utils.buildPDF(employer_id, employee_id, employee_name, start_time, end_time, pdf_contents, pdf_name)
     response = HttpResponse(pdf_contents, content_type='application/pdf')
     response['Content-Disposition'] = ('attachment; filename="'+pdf_name+ '"')
     return response
@@ -191,7 +191,7 @@ def getPayrollData(request):
     if not auth_utils.check_employer(employer_id, employer_key):
         pdf_contents = "Invalid Employer ID/Key";
     pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
-    pdf_contents = file_utils.buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name)
+    pdf_contents = file_utils.buildPDF(employer_id, employee_id, employee_name, start_time, end_time, pdf_contents, pdf_name)
     return HttpResponse(pdf_contents, content_type='application/pdf')
 
 def employeeSearch(request):
