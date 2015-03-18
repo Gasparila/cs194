@@ -3,6 +3,7 @@ import auth_utils
 import datetime
 import excel_utils
 
+#Adds an employee with data received from a HTTP POST request. Validation is performed
 def addEmployee(employer_id, employee_id, employee_name, address, vacation_hours=None, vacation_pay_rate=None, sick_hours=None, sick_pay_rate=None, vacation_accrual_rate=None):     
     if (employer_id or '') == '': return "Employer ID is required"
     if (employee_id or '') == '': return "Employee ID is required"
@@ -19,6 +20,7 @@ def addEmployee(employer_id, employee_id, employee_name, address, vacation_hours
     employee.save()
     return None
 
+#Adds a job with data received from a HTTP POST request. Validation is performed
 def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremental_hours_1=None, incremental_hours_2=None):
     if (employer_id or '') == '': return "Employer ID is required"
     if (job_id or '') == '': return "Job ID is required"
@@ -51,6 +53,7 @@ def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremen
     job.save()
     return None
 
+#Adds a bonus with data received from a HTTP POST request. Validation is performed
 def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end=None, date_given=None):
     cur_time = datetime.datetime.now()
     if (bonus_id or '') == '': return "Bonus ID is required"
@@ -82,6 +85,7 @@ def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end
     bonus.save()
     return None
 
+#Adds a pay period with data received from a HTTP POST request. Validation is performed
 def addPayPeriod(employer_id, pay_start, pay_end, timecard_data):
     if (employer_id or '') == '': return "Employer ID is required"
     if (pay_start or '') == '': return "Pay Start is required"
@@ -97,6 +101,7 @@ def addPayPeriod(employer_id, pay_start, pay_end, timecard_data):
         return "Invalid end date"
     return excel_utils.add_timecard_data(employer_id, pay_start, pay_end, timecard_data)
 
+#Adds an employer with data received from a HTTP POST request. Validation is performed
 def addEmployer(employer_id, employer_name, address, hash_key):
     #consider deleting the following
     cur_time = datetime.datetime.now()
