@@ -62,12 +62,18 @@ def getSingleEmployeeResult(request):
     try: 
         start_date = datetime.datetime.strptime(start, "%b. %d, %Y")
     except: 
-        start_date = datetime.datetime.strptime(start, "%b %d, %Y")
+        try: 
+            start_date = datetime.datetime.strptime(start, "%b %d, %Y")
+        except:
+            start_date = datetime.datetime.strptime(start, "%B %d, %Y")
     end = request.GET.get('end')
     try:
         end_date = datetime.datetime.strptime(end, "%b. %d, %Y")
     except: 
-        end_date = datetime.datetime.strptime(end, "%b %d, %Y")
+        try:
+            end_date = datetime.datetime.strptime(end, "%b %d, %Y")
+        except:
+            end_date = datetime.datetime.strptime(end, "%B %d, %Y")
     employee_id = request.GET.get('employee_id')
     employees = Employee.objects.all().filter(employee_id = employee_id, employer_id = employer_id);
     jobs = Job.objects.all().filter(job_id = job_id);
