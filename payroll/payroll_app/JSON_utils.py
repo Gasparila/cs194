@@ -3,6 +3,8 @@ from django.contrib.auth.hashers import make_password
 import auth_utils
 import datetime
 
+#Utility method to parse an employer from JSON data.
+#does some ugly hard coding and stores the employer
 def addCompanyJSON(json_data):
     try:
         employer_id = json_data['employer_id']
@@ -19,6 +21,8 @@ def addCompanyJSON(json_data):
     employer.save()
     return employer_name
 
+#Utility method to parse an employee from JSON data.
+#does some ugly hard coding and stores the employee
 def addEmployeeJSON(json_data):
     try:
         employer_id = json_data['employer_id']
@@ -59,6 +63,8 @@ def addEmployeeJSON(json_data):
     employee.save()
     return employee_name
 
+#Utility method to parse a job from JSON data.
+#does some ugly hard coding and stores the job
 def addJobJSON(json_data):
     try:
         job_id = json_data['job_id']
@@ -88,6 +94,8 @@ def addJobJSON(json_data):
     job.save()
     return job_title
 
+#Utility method to parse a bulk timecard data from JSON data.
+#does some ugly hard coding and stores the pay period
 def addTimecardDataJSON(json_data):
     try:
         pay_period = json_data['pay_period']
@@ -105,6 +113,8 @@ def addTimecardDataJSON(json_data):
         entry.save();
     return len(timecard_entries)
 
+#Utility method to parse a bonus from JSON data.
+#does some ugly hard coding and stores the bonus
 def addBonusJSON(json_data):
     cur_time = datetime.datetime.now()
     try:
@@ -133,6 +143,8 @@ def addBonusJSON(json_data):
     bonus.save()
     return employee_id
 
+#Parses out the timecard data for a dictionary, doing
+#error checking and validation
 def parseTimecardData(json_entry):
     try:
         job_id = json_entry['job_id']

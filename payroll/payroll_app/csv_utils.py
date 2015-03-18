@@ -3,6 +3,8 @@ from django.contrib.auth.hashers import make_password
 import auth_utils
 import datetime
 
+#Utility method to parse one or more employees
+#from a csv file.
 def parse_employee_csv(csv_file):
     data_list = []
     metadata = {}
@@ -11,7 +13,7 @@ def parse_employee_csv(csv_file):
     for line in lines:
         obj = {}
         values = line.split(',')
-        if first:
+        if first: #first line has metadata about employer
             first = False
             if (values[0] != ""):
                 metadata['employer_id'] = values[0]
@@ -38,6 +40,8 @@ def parse_employee_csv(csv_file):
         data_list.append(obj)
     return data_list
 
+#Utility method to parse one or more jobs
+#from a csv file.
 def parse_job_csv(csv_file):
     data_list = []
     lines = csv_file.splitlines()
@@ -46,7 +50,7 @@ def parse_job_csv(csv_file):
     for line in lines:
         obj = {}
         values = line.split(',')
-        if first:
+        if first: #first line has metadata about employer
             first = False
             if (values[0] != ""):
                 metadata['employer_id'] = values[0]
@@ -69,6 +73,8 @@ def parse_job_csv(csv_file):
         data_list.append(obj)
     return data_list
 
+#Utility method to parse one or more time cards
+#from a csv file.
 def parse_timecard_csv(csv_file):
     data = {}
     data_list = []
@@ -77,7 +83,7 @@ def parse_timecard_csv(csv_file):
     for line in lines:
         obj = {}
         values = line.split(',')
-        if first:
+        if first: #first line has metadata about employer and pay period
             first = False
             if (values[0] != "" and values[1] != ""):
                 pay_period_start = values[0] 
@@ -118,6 +124,8 @@ def parse_timecard_csv(csv_file):
     data['timecard_data'] = data_list
     return data
 
+#Utility method to parse one or more daily
+#time cards from a csv file.
 def add_daily_timecard_data_csv(csv_file):
     data = {}
     data_list = []
@@ -127,7 +135,7 @@ def add_daily_timecard_data_csv(csv_file):
     for line in lines:
         obj = {}
         values = line.split(',')
-        if first:
+        if first: #first line has metadata about employer and pay period
             first = False
             if (values[0] != "" and values[1] != ""):
                 pay_period_start = values[0] 
@@ -174,6 +182,9 @@ def add_daily_timecard_data_csv(csv_file):
     data['timecard_data'] = data_list
     return data
 
+#calculates the overtime. In California, overtime is
+#earned by working more than 8 hours in a given day,
+# or more than 40 non-overtime hours in a week
 def calculate_overtime(daily_hours, weekly_hours):
     overtime_hours = 0
     if daily_hours > 8:
@@ -184,6 +195,8 @@ def calculate_overtime(daily_hours, weekly_hours):
         weekly_hours = 40
     return over_time
 
+#Utility method for adding one or more bonuses
+#from a csv file
 def parse_bonus_csv(csv_file):
     metadata = {}
     data_list = []
