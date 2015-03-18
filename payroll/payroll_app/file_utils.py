@@ -17,6 +17,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
     tex_file += employee_info;
     employer_info = "From: " + employer.employer_name + "\\\\\nAddress: " + employer.address + "\\\\\n\n"  
     tex_file += employer_info
+    TWOPLACES = Decimal(10) ** -2 
     for payperiod in payperiod1:
         for job in jobs:
             if job.job_id == payperiod.job_id:
@@ -25,43 +26,44 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
                 table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours} & \\textbf{Rate} & \\textbf{Payment} \\\\\n\\hline\n"      
                 tex_file += table_start
                 base_pay =  payperiod.hours * job.base_rate;
-                base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(base_pay) + " \\\\\n\\hline\n"   
+                print Decimal(base_pay).quantize(TWOPLACES) 
+                base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(Decimal(base_pay).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                 tex_file += base_row 
                 total = base_pay;
                 if payperiod.overtime_hours > 0: 
                     overtime_pay =  payperiod.overtime_hours * (Decimal(job.base_rate) * Decimal(1.5));
                     total = total + overtime_pay
-                    overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(overtime_pay) + " \\\\\n\\hline\n"   
+                    overtime_row = "Overtime & " + str(payperiod.overtime_hours) + " & " + str((job.base_rate * Decimal(1.5))) + " & " + str(Decimal(overtime_pay).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     tex_file +=overtime_row; 
                 if payperiod.incremental_hours_1 > 0:
                     incremental_pay1 =  payperiod.incremental_hours_1 * (job.incremental_hours_1);
                     total = total + incremental_pay1
-                    incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.incremental_hours_1)) + " & " + str(incremental_pay1) + " \\\\\n\\hline\n"   
+                    incremental_row1 = "Incremental 1 & " + str(payperiod.incremental_hours_1) + " & " + str((job.incremental_hours_1)) + " & " + str(Decimal(incremental_pay1).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     tex_file +=incremental_row1; 
                 if payperiod.incremental_hours_2 > 0:
                     incremental_pay2 =  payperiod.incremental_hours_2 * (job.incremental_hours_2);
-                    incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str(job.incremental_hours_2) + " & " + str(incremental_pay2) + " \\\\\n\\hline\n"   
+                    incremental_row2 = "Incremental 2 & " + str(payperiod.incremental_hours_2) + " & " + str(job.incremental_hours_2) + " & " + str(Decimal(incremental_pay2).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     total = total + incremental_pay2
                     tex_file +=incremental_row2;
                 if payperiod.vacation_hours_spent > 0:
                     vacation_rate = job.base_rate
                     vacation_pay =  payperiod.vacation_hours_spent * (vacation_rate);
                     total = total + vacation_pay
-                    vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(vacation_pay) + " \\\\\n\\hline\n"   
+                    vacation_row = "Vacation & " + str(payperiod.vacation_hours_spent) + " & " + str((vacation_rate)) + " & " + str(Decimal(vacation_pay).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     tex_file += vacation_row; 
                 if payperiod.sick_hours_spent > 0:
                     sick_rate = job.base_rate
                     sick_pay =  payperiod.sick_hours_spent * (sick_rate);
                     total = total + sick_pay
-                    sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(sick_pay) + " \\\\\n\\hline\n"   
+                    sick_row = "Sick & " + str(payperiod.sick_hours_spent) + " & " + str((sick_rate)) + " & " + str(Decimal(sick_pay).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     tex_file += sick_row;
                 if payperiod.holiday_hours_spent > 0:
                     holiday_pay_rate  = job.base_rate
                     holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                     total = total + holiday_pay                        
-                    holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(holiday_pay) + " \\\\\n\\hline\n"   
+                    holiday_row = "Holiday & " + str(payperiod.holiday_hours_spent) + " & " + str((holiday_pay_rate)) + " & " + str(Decimal(holiday_pay).quantize(TWOPLACES)) + " \\\\\n\\hline\n"   
                     tex_file +=holiday_row;
-                total_row = "\\textbf{Total} & & & \\textbf{" + str(total) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
+                total_row = "\\textbf{Total} & & & \\textbf{" + str(Decimal(total).quantize(TWOPLACES)) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
                 tex_file +=total_row;
                 table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours Gained} & \\textbf{Total} \\\\\n\\hline\n"
                 tex_file += table_start;
@@ -77,7 +79,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
     if bonuses:
         tex_file += "Bonuses: \\\\\n\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | }\n\\hline\n\\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
         for bonus in bonuses:
-            tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(bonus.amount) + "\\\\\n\\hline\n";
+            tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(Decimal(bonus.amount).quantize(TWOPLACES)) + "\\\\\n\\hline\n";
         table_end = "\\end{tabular}\n\\end{table}\n\n\n"
         tex_file += table_end;
     tex_file += "\\end{document}"
@@ -94,6 +96,7 @@ def employerBuilder(start_time, end_time, employer_id, employee_name):
     tex_file += employer_info
     table = "| l | l | l | l | l | l |"
     allTotal = 0;
+    TWOPLACES = Decimal(10) ** -2 
     table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
     tex_file +=table_start
     for employee in employees: 
@@ -131,9 +134,9 @@ def employerBuilder(start_time, end_time, employer_id, employee_name):
                         holiday_pay =  payperiod.holiday_hours_spent * (holiday_pay_rate);
                         total = total + holiday_pay   
                     allTotal += total;
-                    all_row = all_row + "" + str(total_hours) + " & " + str(total) + "\\\\\n\\hline\n"    
+                    all_row = all_row + "" + str(total_hours) + " & " + str(Decimal(total).quantize(TWOPLACES)) + "\\\\\n\\hline\n"    
                     tex_file += all_row;                
-    tex_file += "\\textbf{Total:} & & & & & \\textbf{\\$" + str(allTotal) + "}\\\\\n\\hline\n"
+    tex_file += "\\textbf{Total:} & & & & & \\textbf{\\$" + str(Decimal(allTotal).quantize(TWOPLACES)) + "}\\\\\n\\hline\n" 
     end_table = "\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
     tex_file += end_table;
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
@@ -143,7 +146,7 @@ def employerBuilder(start_time, end_time, employer_id, employee_name):
         for bonus in bonuses:
             for employee in employees:
                 if employee.employee_id == bonus.employee_id:
-                    tex_file += employee.employee_id + " & " + employee.employee_name + " & " + str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(bonus.amount) + "\\\\\n\\hline\n";
+                    tex_file += employee.employee_id + " & " + employee.employee_name + " & " + str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(Decimal(bonus.amount).quantize(TWOPLACES)) + "\\\\\n\\hline\n";
         table_end = "\\end{tabular}\n\\end{table}\n\n\n"
         tex_file += table_end;
     tex_file += "\\end{document}"
