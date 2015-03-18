@@ -16,6 +16,8 @@ def addEmployee(employer_id, employee_id, employee_name, address, vacation_hours
     if (vacation_pay_rate or '') == '': vacation_pay_rate = 0
     if (sick_pay_rate or '') == '': sick_pay_rate = 0
     if (vacation_accrual_rate or '') == '': vacation_accrual_rate = 0
+    employee_name = employee_name.strip()
+    address = address.strip()
     employee = Employee(employer_id=employer_id, employee_id=employee_id, employee_name=employee_name, address=address, vacation_hours = vacation_hours, vacation_pay_rate = vacation_pay_rate,  sick_hours = sick_hours, sick_pay_rate = sick_pay_rate, vacation_accrual_rate = vacation_accrual_rate)
     employee.save()
     return None
@@ -49,6 +51,7 @@ def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremen
         incremental_hours_2 = 0
     if Job.objects.filter(job_id = job_id).exists():
         return "Job %s Already Exists" % job_id
+    job_title = job_title.strip()
     job = Job(job_id=job_id, employee_id=employee_id, base_rate = base_rate, incremental_hours_1=incremental_hours_1, incremental_hours_2=incremental_hours_2, job_title = job_title)
     job.save()
     return None
@@ -114,6 +117,7 @@ def addEmployer(employer_id, employer_name, address, hash_key):
     if (hash_key or '') == '': return "Hash key is required"
     if Employer.objects.filter(employer_id = employer_id).exists():
         return "Account with email %s already exists" % employer_id
+    employer_name = employer_name.strip()
     employer = Employer(employer_id=employer_id, employer_name=employer_name, address=address, pay_start=pay_start, pay_end=pay_end, hash_key=hash_key)
     employer.save()
     return None
