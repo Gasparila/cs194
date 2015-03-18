@@ -2,7 +2,8 @@ from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, Aut
 import datetime
 from subprocess import call
 
-
+# This function takes in the inputs and creates a latex file that contains all the payroll information of an employee between the start and end time. 
+# If some cases are never used (like overtime, incremental hours, vacation hours, etc.) then the function will remove them all together
 def employeeBuilder(start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
@@ -81,6 +82,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
     tex_file += "\\end{document}"
     return tex_file
 
+# This function takes in the inputs and creates a latex file that contains an overview of the payroll information of all an employers employees between the start and end time. 
 def employerBuilder(start_time, end_time, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = "\\documentclass[14pt]{article}\n\\newcommand{\\tab}[1]{\\hspace{.2\\textwidth}\\rlap{1}}\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n"
@@ -144,6 +146,10 @@ def employerBuilder(start_time, end_time, employer_id):
     tex_file += "\\end{document}"
     return tex_file
 
+# This function first checks to see if an employee id is given. If it isn't then it is assumed that the employer wants to see an overview of all of their employees 
+# payperiods, and calls employerBuilder to get a latex version of that file. Otherwise it is assumed that they are looking for one particular employee so it will 
+# call employeeBuilder to get a latex file of all the payperiods between the start and end date of a certain employee. Then it converts that file into a pdf and 
+# returns the pdf data.
 def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name):
     tex_name = employer_id + "_" + employee_id + ".tex" 
     tex = open("tmp/"+tex_name,'w')
@@ -166,6 +172,7 @@ def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_n
     f.close()
     return pdf_contents
 
+# This function takes in the inputs and creates a csv file that contains all the payroll information of all the employees of an employer between the start and end time. 
 def employerCSVBuilder(start_time, end_time, employer_id, employee_name):
     employer = Employer.objects.get(employer_id = employer_id)
     employees = Employee.objects.all().filter(employer_id = employer_id)
@@ -228,6 +235,7 @@ def employerCSVBuilder(start_time, end_time, employer_id, employee_name):
                     tex_file += employee.employee_id + ", " + employee.employee_name + ", " + str(bonus.date_given.strftime('%m/%d/%Y'))+ ", " + str(bonus.amount) + "\n"; 
     return tex_file
 
+# This function takes in the inputs and creates a csv that contains all the payroll information of an employee between the start and end time. 
 def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
     employer = Employer.objects.get(employer_id = employer_id)
     tex_file = ""
@@ -302,6 +310,10 @@ def employeeCSVBuilder( start_time, end_time, employee_id, employer_id):
             tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + ", " + str(bonus.amount) + "\n"; 
     return tex_file
 
+# This function first checks to see if an employee id is given. If it isn't then it is assumed that the employer wants
+# to see an overview of all of their employees payperiods, and calls employerCSVBuilder. Otherwise it is assumed that 
+# they are looking for one particular employee so it will call employeeCSVBuilder to get a CSV file of all the payperiods 
+# between the start and end date of a certain employee. 
 def buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name):
     if csv_contents == "":    
         employer = Employer.objects.get(employer_id = employer_id)
