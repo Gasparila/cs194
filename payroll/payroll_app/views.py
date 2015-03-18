@@ -29,7 +29,7 @@ def getEmployeeSearchResults(request):
     if not str(employee_id).isspace() and str(employee_id):
         employees = employees.filter(employee_id = employee_id);
     employee_name = request.POST.get('employee_name')
-    if not str(employee_name).isspace() and str(employee_name) and str(employee_id).isspace() and not str(employee_id):
+    if not str(employee_name).isspace() and str(employee_name) and not (not str(employee_id).isspace() and str(employee_id)):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
         start = request.POST.get('start_date')

@@ -22,7 +22,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
             if job.job_id == payperiod.job_id:
                 payPeriod_info = "Pay Period: " + str(payperiod.pay_start.strftime('%b %d, %Y')) + " to " + str(payperiod.pay_end.strftime('%b %d, %Y')) + " \\\\\nJob: " + job.job_title + " \\\\\n\n"
                 tex_file += payPeriod_info
-                table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours} & \\textbf{Rate} & \\textbf{Payment} \\\\\n\\hline\n"      
+                table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours} & \\textbf{Rate} & \\textbf{Payment} \\\\\n\\hline\n"      
                 tex_file += table_start
                 base_pay =  payperiod.hours * job.base_rate;
                 base_row = "Base & " + str(payperiod.hours) + " & " + str(job.base_rate) + " & " + str(base_pay) + " \\\\\n\\hline\n"   
@@ -63,7 +63,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
                     tex_file +=holiday_row;
                 total_row = "\\textbf{Total} & & & \\textbf{" + str(total) + "}\\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n\n";
                 tex_file +=total_row;
-                table_start = "\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours Gained} & \\textbf{Total} \\\\\n\\hline\n"
+                table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | l | }\n\\hline\n\\textbf{Type} & \\textbf{Hours Gained} & \\textbf{Total} \\\\\n\\hline\n"
                 tex_file += table_start;
                 vacation_row = "Vacation Hours & " + str(payperiod.vacation_hours) + " & " + str((employee.vacation_hours)) +" \\\\\n\\hline\n" 
                 sick_row = "Sick Hours & " + str(payperiod.sick_hours) + " & " + str((employee.sick_hours)) +" \\\\\n\\hline\n" 
@@ -75,7 +75,7 @@ def employeeBuilder(start_time, end_time, employee_id, employer_id):
     bonuses = bonuses.filter(date_given__lte = end_time + datetime.timedelta(days=1));
     bonuses = bonuses.filter(employee_id = employee.employee_id);
     if bonuses:
-        tex_file += "Bonuses: \\\\\n\\begin{table}[htb]\n\\begin{tabular}{| l | l | }\n\\hline\n\\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
+        tex_file += "Bonuses: \\\\\n\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | }\n\\hline\n\\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
         for bonus in bonuses:
             tex_file +=  str(bonus.date_given.strftime('%m/%d/%Y')) + "& " + str(bonus.amount) + "\\\\\n\\hline\n";
         table_end = "\\end{tabular}\n\\end{table}\n\n\n"
@@ -94,7 +94,7 @@ def employerBuilder(start_time, end_time, employer_id, employee_name):
     tex_file += employer_info
     table = "| l | l | l | l | l | l |"
     allTotal = 0;
-    table_start = "\\begin{table}[htb]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
+    table_start = "\\begin{table}[!htbp]\n\\begin{tabular}{" + table + "}\n\\hline\n\\textbf{Employee} & \\textbf{Job} & \\textbf{Start Date} & \\textbf{End Date} & \\textbf{Hours} & \\textbf{Payment} \\\\\n\\hline\n"      
     tex_file +=table_start
     for employee in employees: 
         employee_id = employee.employee_id
@@ -139,7 +139,7 @@ def employerBuilder(start_time, end_time, employer_id, employee_name):
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_time);
     bonuses = bonuses.filter(date_given__lte = end_time + datetime.timedelta(days=1));
     if bonuses:
-        tex_file += "Bonuses: \\\\\n\\begin{table}[htb]\n\\begin{tabular}{| l | l | l | l |}\n\\hline\n\\textbf{Employee ID} & \\textbf{Employee} & \\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
+        tex_file += "Bonuses: \\\\\n\\begin{table}[!htbp]\n\\begin{tabular}{| l | l | l | l |}\n\\hline\n\\textbf{Employee ID} & \\textbf{Employee} & \\textbf{Date Bonus Given} & \\textbf{Amount} \\\\\n\\hline\n"
         for bonus in bonuses:
             for employee in employees:
                 if employee.employee_id == bonus.employee_id:
