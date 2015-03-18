@@ -152,7 +152,7 @@ def employerBuilder(start_time, end_time, employer_id):
 # call employeeBuilder to get a latex file of all the payperiods between the start and end date of a certain employee. Then it converts that file into a pdf and 
 # returns the pdf data.
 def buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name):
-    tex_name = employer_id + "_" + employee_id + ".tex" 
+    tex_name = employer_id.strip() + "_" + employee_id.strip() + ".tex" 
     tex = open("tmp/"+tex_name,'w')
     if pdf_contents == "":
         employer = Employer.objects.get(employer_id = employer_id)

@@ -69,7 +69,7 @@ def getSingleEmployeeResult(request):
     payperiods = PayPeriod.objects.all().filter(pay_start = start_date, pay_end = end_date, employee_id = employee_id, job_id = job_id);
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
     bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
-    return render(request, 'single_employee_result.html', {'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
+    return render(request, 'single_employee_result.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':"", 'start':str(start_date.strftime('%m/%d/%y')), 'end':str(end_date.strftime('%m/%d/%y')), 'name' : request.session.get('company_name'),  'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
 
 # Function that is called to download the CSV of the search made from the website. When called, this function automatically downloads the csv
 def getPayrollCSVWeb(request):
@@ -150,7 +150,7 @@ def getPayrollDataWeb(request):
         end_time = datetime.datetime.strptime(str(end), "%m/%d/%y")
     except:
         end_time = datetime.datetime.today()
-    pdf_name = employer_id + "_" + employee_id + ".pdf"
+    pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
     pdf_contents = file_utils.buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name)
     response = HttpResponse(pdf_contents, content_type='application/pdf')
     response['Content-Disposition'] = ('attachment; filename="'+pdf_name+ '"')
@@ -190,7 +190,7 @@ def getPayrollData(request):
         pdf_contents = "Invalid Employer ID/Key";
     if not auth_utils.check_employer(employer_id, employer_key):
         pdf_contents = "Invalid Employer ID/Key";
-    pdf_name = employer_id + "_" + employee_id + ".pdf"
+    pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
     pdf_contents = file_utils.buildPDF(employer_id, employee_id, start_time, end_time, pdf_contents, pdf_name)
     return HttpResponse(pdf_contents, content_type='application/pdf')
 

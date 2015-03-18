@@ -271,6 +271,8 @@
                     </table>
                     {% endif %}
                     {% endif %}
+                     <button class="btn btn-success fileDownloadSimpleRichExperience" type="button" id="pdf-download-button"><i class="fa fa-download"></i>&nbsp;&nbsp;<span class="bold">.pdf</span></button>
+                    <button class="btn btn-info fileDownloadSimpleRichExperience" type="button" id="csv-download-button"><i class="fa fa-download"></i>&nbsp;&nbsp;<span class="bold">.csv</span></button>
                     </div>
                 </div>
             </div>
@@ -278,7 +280,7 @@
         </div>
         <div class="footer">
             <div>
-                <strong>Copyright</strong> Example Company &copy; 2014-2015
+                <strong>Copyright</strong> EasyPayroll &copy; 2014-2015
             </div>
         </div>
 
@@ -372,6 +374,23 @@
                 "New row" ] );
 
         }
+    </script>
+
+    <script src="{% static 'js/jquery.fileDownload.js' %}"></script>
+    <script>
+        var strData = {'employer_id':"{{employer_id}}", 'employee_id':"{{employee_id}}", 'employee_name': "{{employee_name}}", 'start':"{{start}}", 'end':"{{end}}"}
+        $("#pdf-download-button").click(function(){
+                $.fileDownload("/getPayrollDataWeb", {
+                    data: strData
+                });
+            return false; //this is critical to stop the click event which will trigger a normal file download!
+        });
+        $("#csv-download-button").click(function(){
+                $.fileDownload("/getPayrollCSVWeb", {
+                    data: strData
+                });
+            return false; //this is critical to stop the click event which will trigger a normal file download!
+        });
     </script>
 <style>
     body.DTTT_Print {
