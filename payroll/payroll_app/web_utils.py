@@ -28,16 +28,22 @@ def addJob(employer_id, job_id, employee_id, job_title, base_rate=None, incremen
     if not Employee.objects.filter(employee_id = employee_id).exists():
         return "There is no employee with id %s" % employee_id
     try:
+        if base_rate[0] == '$':
+            base_rate = base_rate[1:]
         base_rate = float(base_rate)
     except:
-        base_rate = 0
+        return "Improper formatted base rate"
     try:
         incremental_hours_1 = float(incremental_hours_1)
     except:
+        if incremental_hours_1  and incremental_hours_1  != '':
+            return "improper formatted incremental hours 1"
         incremental_hours_1 = 0
     try:
         incremental_hours_2 = float(incremental_hours_2)
     except:
+        if incremental_hours_2  and incremental_hours_2  != '':
+            return "improper formatted incremental hours 2"
         incremental_hours_2 = 0
     if Job.objects.filter(job_id = job_id).exists():
         return "Job %s Already Exists" % job_id
@@ -50,6 +56,12 @@ def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end
     if (bonus_id or '') == '': return "Bonus ID is required"
     if (employee_id or '') == '': return "Employee ID is required"
     if (amount or '') == '': return "Amount is required"
+    try:
+        if amount[0] == '$':
+            amount = base_rate[1:]
+        fl = float(amount) #Hack: Make sure it is a valid number
+    except:
+        return "Improper format of amount"
     if not Employee.objects.filter(employee_id = employee_id).exists():
         return "There is no employee with id %s" % employee_id
     try:
