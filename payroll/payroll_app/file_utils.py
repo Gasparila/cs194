@@ -1,4 +1,5 @@
 from payroll_app.models import Employer, Employee, Job, BonusPay, PayPeriod, AuthUser
+from decimal import *
 import datetime
 from subprocess import call
 
