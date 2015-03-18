@@ -312,10 +312,11 @@ def render_index(request):
         months.append(date)
     months.reverse() #Want most recent time last
 
+    #creates a generator with 12 sets of pay periods: 1 for each of the past months
     pay_periods_gen =  (PayPeriod.objects.all().filter(pay_start__gte = months[i]).filter(pay_end__lte = months[i + 1]) for i in range(12))
     sums = []
     for i, pay in enumerate(pay_periods_gen):
-        sums.append([str(months[i]).split()[0], get_total(pay)]) #split to get yyyy-mm-dd
+        sums.append([str(months[i]).split()[0], get_total(pay)]) #split to get yyyy-mm-dd format that JS can parse
     return render(request, 'index.html', {'name' : request.session.get('company_name'), 'monthly_total' : sums})
 
 # Checks to see if index is authentic and renders the initial page. Otherwise it will redirect to the login page
@@ -331,7 +332,7 @@ def index(request):
             auth.login(request, user)
             request.session['email']=email
             company_name = Employer.objects.get(employer_id = email).employer_name
-            request.session['company_name'] = company_name
+            request.session['company_name'] = company_name #store company name and email in session
             return render_index(request)
         else:
             messages.add_message(request, messages.INFO, 'Inactive user account')
@@ -376,22 +377,11 @@ def logout(request):
 
 # Simply redirects to the login page.
 def createAccounts(request):
-#   user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
-#   user.save()
     return redirect('/login')    
 
-#TODO: remove this since we should manually add companies
-@csrf_exempt
-def addCompany(request):
-    if request.method == 'POST':
-        content_type = request.META['CONTENT_TYPE']
-        if content_type == 'application/json':
-            employer_name = JSON_utils.addCompanyJSON(json.loads(request.body))
-            return HttpResponse("Successfully created entry for %s." % employer_name) 
-        raise Http404("Invalid application type")
-    raise Http404("Error, request wasn't POST")
-
-
+#Adds an employee from a curl command. See curl file for example commands
+#Data can be either in JSON or CSV format. This should never be called
+#from the front end. 
 @csrf_exempt
 def addEmployee(request):
     if request.method == 'POST':
@@ -408,6 +398,9 @@ def addEmployee(request):
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
+#Adds a job from a curl command. See curl file for example commands
+#Data can be either in JSON or CSV format. This should never be called
+#from the front end. 
 @csrf_exempt
 def addJob(request):
     if request.method == 'POST':
@@ -424,6 +417,10 @@ def addJob(request):
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
+#Adds a time card from a curl command. See curl file for example commands
+#Data can be either in JSON or CSV format. This should never be called
+#from the front end. This version takes in full timecard data for a 
+#pay period as provided from some other timekeeping software
 @csrf_exempt
 def addTimecardData(request):
     if request.method == 'POST':
@@ -439,6 +436,9 @@ def addTimecardData(request):
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
+#Adds a daily time card from a curl command. See curl file for example commands
+#Data can be either in JSON or CSV format. This should never be called
+#from the front end. This version parses time data and calculates overtime
 @csrf_exempt
 def addDailyTimecardData(request):
     if request.method == 'POST':
@@ -450,6 +450,9 @@ def addDailyTimecardData(request):
         raise Http404("Invalid application type")
     raise Http404("Error, request wasn't POST")
 
+#Adds a bonus from a curl command. See curl file for example commands
+#Data can be either in JSON or CSV format. This should never be called
+#from the front end
 @csrf_exempt
 def addBonus(request):
     if request.method == 'POST':
