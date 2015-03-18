@@ -124,9 +124,9 @@ def getPayrollCSV(request):
     try:
         employer_id = json_data['employer_id']
         employer_key = json_data['key']
+        if not auth_utils.check_employer(employer_id, employer_key):
+            csv_contents = "Invalid Employer ID/Key";
     except:
-        csv_contents = "Invalid Employer ID/Key";
-    if not auth_utils.check_employer(employer_id, employer_key):
         csv_contents = "Invalid Employer ID/Key";
     csv_name = employer_id + "_" + employee_id + ".csv"
     csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name)
@@ -186,10 +186,11 @@ def getPayrollData(request):
     try:
         employer_id = json_data['employer_id']
         employer_key = json_data['key']
+        if not auth_utils.check_employer(employer_id, employer_key):
+            pdf_contents = "Invalid Employer ID/Key";
     except:
         pdf_contents = "Invalid Employer ID/Key";
-    if not auth_utils.check_employer(employer_id, employer_key):
-        pdf_contents = "Invalid Employer ID/Key";
+    
     pdf_name = employer_id.strip() + "_" + employee_id.strip() + ".pdf"
     pdf_contents = file_utils.buildPDF(employer_id, employee_id, employee_name, start_time, end_time, pdf_contents, pdf_name)
     return HttpResponse(pdf_contents, content_type='application/pdf')
