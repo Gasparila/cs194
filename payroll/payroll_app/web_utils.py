@@ -71,15 +71,15 @@ def addBonus(employer_id, bonus_id, employee_id, amount, pay_start=None, pay_end
     if not Employee.objects.filter(employee_id = employee_id).exists():
         return "There is no employee with id %s" % employee_id
     try:
-        pay_start = datetime.datetime.strptime(pay_start, "%m/%d/%y")
+        pay_start = datetime.datetime.strptime(pay_start, "%Y-%m-%d")
     except:
         pay_start = cur_time      
     try: 
-        pay_end = datetime.datetime.strptime(pay_end, "%m/%d/%y")
+        pay_end = datetime.datetime.strptime(pay_end, "%Y-%m-%d")
     except:    
         pay_end = cur_time    
     try:        
-        date_given = datetime.datetime.strptime(date_given, "%m/%d/%y")
+        date_given = datetime.datetime.strptime(date_given, "%Y-%m-%d")
     except:
         date_given = cur_time
     if BonusPay.objects.filter(bonus_id = bonus_id).exists():
@@ -95,11 +95,11 @@ def addPayPeriod(employer_id, pay_start, pay_end, timecard_data):
     if (pay_end or '') == '': return "Pay End is required"
     if (timecard_data or '') == '': return "Timecard Data is required"
     try:
-        pay_start = datetime.datetime.strptime(pay_start, "%m/%d/%y")
+        pay_start = datetime.datetime.strptime(pay_start, "%Y-%m-%d")
     except:
         return "Invalid start date"
     try: 
-        pay_end = datetime.datetime.strptime(pay_end, "%m/%d/%y")
+        pay_end = datetime.datetime.strptime(pay_end, "%Y-%m-%d")
     except:    
         return "Invalid end date"
     return excel_utils.add_timecard_data(employer_id, pay_start, pay_end, timecard_data)

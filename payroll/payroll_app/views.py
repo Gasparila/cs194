@@ -33,12 +33,12 @@ def getEmployeeSearchResults(request):
         employees = employees.filter(employee_name__icontains = employee_name);
     try:
         start = request.POST.get('start_date')
-        start_date = datetime.datetime.strptime(str(start), "%m/%d/%y")
+        start_date = datetime.datetime.strptime(str(start), "%Y-%m-%d")
     except:
         start_date = datetime.datetime.strptime("0001-1-1", "%Y-%m-%d")
     try:
         end = request.POST.get('end_date')
-        end_date = datetime.datetime.strptime(str(end), "%m/%d/%y")
+        end_date = datetime.datetime.strptime(str(end), "%Y-%m-%d")
     except:
         end_date = datetime.datetime.today()
     #Bug Fix: Make start and end dates timezone aware to allow comparisons
@@ -49,9 +49,8 @@ def getEmployeeSearchResults(request):
     payperiod1 = payperiod1.filter(pay_end__lte = end_date)
 
     jobs = Job.objects.all()
-
     bonuses = BonusPay.objects.all().filter(date_given__gte = start_date);
-    bonuses = bonuses.filter(date_given__lte = end_date+ datetime.timedelta(days=1));
+    bonuses = bonuses.filter(date_given__lte = (end_date+datetime.timedelta(days=1)));
     return render(request, 'employee_search_results.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':employee_name, 'start':start, 'end':end, 'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
