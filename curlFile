@@ -1,4 +1,4 @@
-Use:
+cUse:
 curl -d <something from below> url
 
 Example:
@@ -45,12 +45,22 @@ curl -d "{\"pay_period\":{\"start\":\"1/20/15\",\"end\":\"1/30/15\"},\"employer_
 
 Get TimeCard
 
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"Amazon@gmail.com\", \"key\":\"password\", \"employee_name\":\"Danial\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
+
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"Amazon@gmail.com\", \"key\":\"password\", \"employee_id\":\"11\"}" http://127.0.0.1:8000/getPayrollData > timecard.pdf
+
+
+
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"8675-309\", \"employee_id\":\"24.5\", \"key\":\"private_key\"}" http://127.0.0.1:8000/ > timecard.pdf
 
 
 curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollData > timecard.pdf
 
-curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"employee_id\":\"78777\", \"key\":\"HASHVALUE2\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"13492\", \"key\":\"HASHVALUE2\", \"employee_id\":\"78777\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
+
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"Amazon@gmail.com\", \"key\":\"password\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
+
+curl -H "Content-Type: application/json" -d "{\"employer_id\":\"Amazon\", \"key\":\"password\", \"employee_name\":\"Danial\", \"start\":\"12/1/13\",\"end\":\"12/26/13\"}" http://127.0.0.1:8000/getPayrollCSV > timecard.csv
 
 Mandatory: 
 Employer_ID

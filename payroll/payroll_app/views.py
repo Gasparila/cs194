@@ -129,7 +129,7 @@ def getPayrollCSV(request):
     if not auth_utils.check_employer(employer_id, employer_key):
         csv_contents = "Invalid Employer ID/Key";
     csv_name = employer_id + "_" + employee_id + ".csv"
-    csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name, employee_name)
+    csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name)
     return HttpResponse(csv_contents, content_type='text/csv')
 
 # Function that is called to download the pdf of the search made from the website. When called, this function automatically downloads the csv
