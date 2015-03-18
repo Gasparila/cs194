@@ -21,6 +21,7 @@ import csv_utils
 import web_utils
 import file_utils
 
+# Takes in data and desplays the employee_search_results page. If data is blank or empty, then default values are passed. 
 def getEmployeeSearchResults(request):
     employer_id = request.session['email'] 
     employee_id = request.POST.get('employee_id')
@@ -54,6 +55,7 @@ def getEmployeeSearchResults(request):
     return render(request, 'employee_search_results.html', {'employer_id':employer_id, 'employee_id':employee_id, 'employee_name':employee_name, 'start':start, 'end':end, 'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiod1, 'jobs': jobs, 'bonuses': bonuses}) 
 
 
+# Returns the single_employees_result page which shows all the information about the selected pay period for that employee
 def getSingleEmployeeResult(request):
     employer_id = request.session['email']
     job_id = request.GET.get('job_id')
@@ -69,6 +71,7 @@ def getSingleEmployeeResult(request):
     bonuses = bonuses.filter(date_given__lte = end_date + datetime.timedelta(days=1));
     return render(request, 'single_employee_result.html', {'name' : request.session.get('company_name'), 'employees': employees, 'payperiods': payperiods, 'jobs': jobs, 'bonuses': bonuses}) 
 
+# Function that is called to download the CSV of the search made from the website. When called, this function automatically downloads the csv
 def getPayrollCSVWeb(request):
     csv_contents = ""
     employer_id = request.session['email']
@@ -92,6 +95,9 @@ def getPayrollCSVWeb(request):
     response['Content-Disposition'] = ('attachment; filename="'+csv_name+ '"')
     return response
 
+# Curl command to get the csv of a certain payperiod search. If the employer id or the employer key are not present or are not valid
+# the CSV will show the error. All other inputs (Employee ID, start date, end date, and employee name) are optional. The inputs are 
+# assumed to be in json. For examples please look in the curl file.  
 def getPayrollCSV(request):
     json_data = json.loads(request.body)
     csv_contents =""
@@ -126,7 +132,7 @@ def getPayrollCSV(request):
     csv_contents = file_utils.buildCSV(employer_id, employee_id, employee_name, start_time, end_time, csv_contents, csv_name)
     return HttpResponse(csv_contents, content_type='text/csv')
 
-# Create your views here
+# Function that is called to download the pdf of the search made from the website. When called, this function automatically downloads the csv
 def getPayrollDataWeb(request):
     pdf_contents ="";
     employer_id = request.session['email']
@@ -150,7 +156,9 @@ def getPayrollDataWeb(request):
     response['Content-Disposition'] = ('attachment; filename="'+pdf_name+ '"')
     return response
 
-# Create your views here
+# Curl command to get the pdf of a certain payperiod search. If the employer id or the employer key are not present or are not valid
+# the PDF will show the error. All other inputs (Employee ID, start date, end date, and employee name) are optional. The inputs are 
+# assumed to be in json. For examples please look in the curl file.  
 @csrf_exempt
 def getPayrollData(request):
     json_data = json.loads(request.body)
@@ -262,6 +270,7 @@ def createPayPeriod(request):
     else:
         return render(request, 'create_pay_period.html', {'name' : request.session.get('company_name')}) 
 
+# Calculates the total made by an employee in a pay period
 def get_total(pay_periods):
     total = 0
     for pay_period in pay_periods:
@@ -288,6 +297,7 @@ def get_total(pay_periods):
             total += holiday_pay                        
     return total
 
+# Renders the initial page after login 
 def render_index(request):
     cur_month =  datetime.datetime.now().month
     cur_year =  datetime.datetime.now().year
@@ -308,7 +318,7 @@ def render_index(request):
         sums.append([str(months[i]).split()[0], get_total(pay)]) #split to get yyyy-mm-dd
     return render(request, 'index.html', {'name' : request.session.get('company_name'), 'monthly_total' : sums})
 
-# Create your views here.
+# Checks to see if index is authentic and renders the initial page. Otherwise it will redirect to the login page
 def index(request):
     #If the user is logged in, show them the dashboard
     if request.user.is_authenticated(): return render_index(request)
@@ -331,14 +341,17 @@ def index(request):
             messages.add_message(request, messages.INFO, 'Invalid login information')
         return redirect('/login')   
 
+# Simply renders the login page
 def login(request):
     storage = get_messages(request)
     return render(request, 'login.html', {})
 
+# Simply renders the register page
 def register(request):
     storage = get_messages(request)
     return render(request, 'register.html', {})
 
+# Creates an account and renders the index page. If there is an error with creating the account then it will redirect to the register page and display the error
 def registerSubmit(request):
     company_name = request.GET.get('company_name')
     company_address = request.GET.get('company_address')
@@ -356,13 +369,15 @@ def registerSubmit(request):
         messages.add_message(request, messages.INFO, error)
         return redirect('/register')
 
+# Logs out the user and redirects to the login page.
 def logout(request):
     auth.logout(request)
     return redirect('/')            
 
+# Simply redirects to the login page.
 def createAccounts(request):
-    user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
-    user.save()
+#   user = AuthUser.objects.create_user('naveenk1@stanford.edu', password='password')
+#   user.save()
     return redirect('/login')    
 
 #TODO: remove this since we should manually add companies
